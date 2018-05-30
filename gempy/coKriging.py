@@ -616,10 +616,15 @@ class SGS(object):
         # Select input data and compute its euclidean distances
         selected_coord_data = self.data_to_inter[selection_A][['X', 'Y', 'Z']]
         selected_values_data = self.data_to_inter[selection_A][self.data_to_inter.columns.difference(['X', 'Y', 'Z'])].as_matrix()
+
+
         h_A = self.SED_f(selected_coord_data, selected_coord_data)
 
+
         # Select points of grid to interpolate and compute the euclidean distances respect the input data
-        selected_grid_to_inter = self.grid_to_inter[selection_b]
+        selected_grid_to_inter = self.grid_to_inter.values[selection_b]
+
+
         h_b = self.SED_f(selected_coord_data, selected_grid_to_inter)
 
         # Parameters for the covariances
@@ -634,8 +639,8 @@ class SGS(object):
 
        # Compute cross-covariances
         cov_h = cross_covariance(trace, h_A, sample=sample,
-                                 nuggets=nuggets, n_var=n_var, n_exp=n_exp, n_gaus=n_gauss, ordinary=True)
-        cov_b = cross_covariance(trace, h_b, sample=sample, nuggets=nuggets, n_var=n_var, n_exp=n_exp,
+                                 nuggets=nuggets.values, n_var=n_var, n_exp=n_exp, n_gaus=n_gauss, ordinary=True)
+        cov_b = cross_covariance(trace, h_b, sample=sample, nuggets=nuggets.values, n_var=n_var, n_exp=n_exp,
                                  n_gaus=n_gauss,
                                  ordinary=True)
 
