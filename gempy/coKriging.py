@@ -637,12 +637,28 @@ class SGS(object):
         # Choose a random trace to conserve the covariance uncertainty of the regression
         sample = np.random.randint(trace['weights'].shape[0] - 1000, trace['weights'].shape[0])
 
+        #print("sample:", sample)
+
+        #print("nuggets shape:", nuggets.shape)
+        #print("n_properties", self.n_properties)
+        #print("n_var:", n_var)
+        #print("n_exp:", n_exp)
+        #print("n_gaus:", n_gauss)
+        #("trace", trace)
+        #print("h_A shape", h_A.shape)
+        #print("h_b shape", h_b.shape)
+
        # Compute cross-covariances
         cov_h = cross_covariance(trace, h_A, sample=sample,
                                  nuggets=nuggets.values, n_var=n_var, n_exp=n_exp, n_gaus=n_gauss, ordinary=True)
         cov_b = cross_covariance(trace, h_b, sample=sample, nuggets=nuggets.values, n_var=n_var, n_exp=n_exp,
                                  n_gaus=n_gauss,
                                  ordinary=True)
+
+        print(cov_h.shape)
+        print(cov_b.shape)
+        print(cov_h[634][634])
+        quit()
 
         # Solve kriging system
         k_weights = np.linalg.solve(cov_h, cov_b)
@@ -830,11 +846,16 @@ def cross_covariance(trace, sed, sample, nuggets=None, n_var=1, n_exp=2, n_gaus=
     """
     h = np.ravel(sed)
     n_points = len(h)
+
     n_points_r = sed.shape[0]
     n_points_c = sed.shape[1]
     #sample = np.random.randint(trace['weights'].shape[0]-200, trace['weights'].shape[0])
     n_eq = trace['weights'].shape[1]
     # Exp contribution
+    #print(h)
+    #print(trace)
+    #print(sample)
+
     exp_cont = (np.tile(
         exp_vario(h, trace['sill'][sample][:n_exp], trace['range'][sample][:n_exp]),
         n_var**2
@@ -848,6 +869,13 @@ def cross_covariance(trace, sed, sample, nuggets=None, n_var=1, n_exp=2, n_gaus=
 
     # Stacking and summing
     conts = np.hstack((exp_cont, gaus_cont)).sum(axis=1)
+
+    #print("conts", conts.shape)
+    #print("conts dtype", conts.dtype)
+    #print("conts txpe", type(conts))
+    #print("nuggets", nuggets.shape)
+    #print("nuggets dtype", nuggets.dtype)
+    #print("nuggets type", type(nuggets))
 
     if nuggets is not None:
         conts += nuggets
