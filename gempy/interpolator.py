@@ -329,8 +329,8 @@ class InterpolatorData:
     # =======
     # Gravity
     def create_geophysics_obj(self, ai_extent, ai_resolution, ai_z=None, range_max=None):
-        from .geophysics import GravityPreprocessing
-        self.geophy = GravityPreprocessing(self, ai_extent, ai_resolution, ai_z=ai_z, range_max=range_max)
+        from .geophysics import Preprocessing
+        self.geophy = Preprocessing(self, ai_extent, ai_resolution, ai_z=ai_z, range_max=range_max)
 
     def set_gravity_precomputation(self, gravity_obj):
         """
