@@ -20,9 +20,9 @@ import theano
 import theano.tensor as T
 from scipy.constants import G
 
-
-class GravityPreprocessing(object):
-    def __init__(self, interp_data, ai_extent, ai_resolution, ai_z=None, range_max=None):
+#just testing
+class Preprocessing(object):
+    def __init__(self, interp_data, ai_extent, ai_resolution, accuracy, ai_z=None, range_max=None):
 
         self.interp_data = interp_data
         self.ai_extent = np.array(ai_extent)
