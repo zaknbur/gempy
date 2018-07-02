@@ -802,10 +802,10 @@ def set_interpolation_data(geo_data, **kwargs):
     return in_data
 
 
-def set_geophysics_obj(interp_data, ai_extent, ai_resolution, ai_z=None, range_max=None):
+def set_geophysics_obj(interp_data, ai_extent, ai_resolution, accuracy, ai_z=None, range_max=None):
 
     assert isinstance(interp_data, InterpolatorData), 'The object has to be instance of the InterpolatorInput'
-    interp_data.create_geophysics_obj(ai_extent, ai_resolution, ai_z=ai_z, range_max=range_max)
+    interp_data.create_geophysics_obj(ai_extent, ai_resolution, accuracy, ai_z=ai_z, range_max=range_max)
     return interp_data.geophy
 
 
