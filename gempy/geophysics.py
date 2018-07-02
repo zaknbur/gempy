@@ -34,7 +34,7 @@ class Preprocessing(object):
         if ai_z is None:
             ai_z = self.model_grid[:, 2].max()
 
-        self.airborne_plane = self.set_airborne_plane(ai_z, self.ai_resolution)
+        self.airborne_plane = self.set_airborne_plane(ai_z, self.ai_resolution, accuracy)
 
         self.model_resolution = interp_data.geo_data_res.resolution[0] * \
                                 interp_data.geo_data_res.resolution[1] * \
