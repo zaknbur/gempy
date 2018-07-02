@@ -71,11 +71,11 @@ def test_ch5(theano_f_grav, theano_f):
    # gp.plot_surfaces_3D_real_time(interp_data, ver_s, sim_s)
 
     # Importing the data from csv files and settign extent and resolution
-    geo_data_extended = gp.create_data([696000-10000,
-                                        747000 + 20600,
-                                        6863000 - 20600,6950000 + 20600,
+    geo_data_extended = gp.create_data([695000 - 10000,
+                                        747000 + 20000,
+                                        6863000 - 20000,6950000 + 20000,
                                         -20000, 600],
-                                       [50, 50, 50],
+                                       [41, 51, 50],
                                    path_o=input_path + "/input_data/tut_SandStone/SandStone_Foliations.csv",
                                    path_i=input_path + "/input_data/tut_SandStone/SandStone_Points.csv")
 
@@ -123,14 +123,16 @@ def test_ch5(theano_f_grav, theano_f):
     interp_data_grav.update_interpolator(geo_data_extended)
 
     gp.set_geophysics_obj(interp_data_grav,  [7.050000e+05,747000,6863000,6925000,-20000, 200],
-                                                 [10, 10],)
+                                                 [22, 32], False)
 
-    gp.precomputations_gravity(interp_data_grav, 10)
+    gp.precomputations_gravity(interp_data_grav, 22)
+
+    gp.precomputations_magnetic(interp_data_grav, 22)
 
     lith, fault, grav = gp.compute_model(interp_data_grav, 'gravity')
 
     import matplotlib.pyplot as plt
 
-    plt.imshow(grav.reshape(10, 10), cmap='viridis', origin='lower',
+    plt.imshow(grav.reshape(22, 32), cmap='viridis', origin='lower',
                extent=[7.050000e+05,747000,6863000,6950000] )
     plt.colorbar()
