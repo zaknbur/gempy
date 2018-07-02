@@ -48,9 +48,10 @@ class Preprocessing(object):
             self.range_max = range_max
 
         # Boolean array that select the voxels that affect each measurement. Size is measurement times resolution
-        self.b_all = np.zeros((0, self.model_resolution), dtype=bool)
+        self.num = self.ai_resolution[0] * self.ai_resolution[1]
 
     def compute_gravity(self, n_chunck_o=25):
+        self.b_all = np.zeros((0, self.model_resolution), dtype=bool)
         # TODO this function sucks
         # Init
         i_0 = 0
