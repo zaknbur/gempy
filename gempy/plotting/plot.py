@@ -75,7 +75,7 @@ class vtkPlot():
     def plot_surfaces_3D(self, vertices_l, simplices_l,
                      #formations_names_l, formation_numbers_l,
                       plot_data=True,
-                     **kwargs):
+                      **kwargs):
         """
         Plot in vtk the surfaces. For getting vertices and simplices See gempy.get_surfaces
 
@@ -93,7 +93,6 @@ class vtkPlot():
             None
         """
         self.restart()
-
         self.vv.set_surfaces(vertices_l, simplices_l,
                    #formations_names_l, formation_numbers_l,
                     self.alpha)
@@ -449,8 +448,6 @@ class vtkPlot():
                 print('If the theano graph expects faults and/or lithologies you need to pass at least one'
                       ' interface for each of them')
         #self.vv.interp_data.update_interpolator(self.geo_data)
-
-
 
         self.vv.interactor.Render()
 
