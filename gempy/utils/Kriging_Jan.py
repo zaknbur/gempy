@@ -99,7 +99,7 @@ class Kriging(object):
         # best case, only do that if not done before, so only of nothing is specified in keywords
         # preset everything for now, maybe make this optional later, either pass sill, range, model, and nugget
         # or make scipy bestfit
-        self.range_ = 100
+        self.range_ = 150
         self.sill = 20
         self.nugget = 1
 
@@ -259,7 +259,7 @@ class Kriging(object):
 
     def distances_grid(self, ref, perp, dist_clean):
         # stretch factor test, does not work with variogram model like this
-        dist_clean = dist_clean / 100
+        dist_clean = dist_clean / 10
 
         dist_matrix = np.zeros([len(ref), len(ref)])
         ref = ref.astype(int)
