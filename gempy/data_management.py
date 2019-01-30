@@ -72,7 +72,7 @@ class InputData(object):
                  resolution=[50, 50, 50],
                  path_i=None, path_o=None, path_f =None,
                  **kwargs):
-
+        #print('hallo i bims')
         self._formation_values_set = False
 
         if path_f and path_o is None:
@@ -134,6 +134,29 @@ class InputData(object):
         # Set dtypes
         self.interfaces['isFault'] = self.interfaces['isFault'].astype('bool')
         self.orientations['isFault'] = self.orientations['isFault'].astype('bool')
+
+    def set_colors(self, colordict):
+        """
+        add a colordictionary where each formation has a hex string defining its color.
+        Args:
+            colordict:
+
+        Returns: self.formations with the colorstrings mapped to the formations
+
+        """
+        #self.colors = colordict
+        assert len(colordict) >= len(self.formations)
+
+        for form in self.formations.index:
+            for form2, color in colordict.items():
+                if form == form2:
+                    self.formations.at[form, 'color'] = str(color)
+
+        def color(value):
+            if type(value) == str:
+                return "background-color: %s" % value
+
+        return self.formations.style.applymap(color,subset=['color'])
 
     def set_basement(self):
 
@@ -899,7 +922,7 @@ class InputData(object):
                 # Check if there is already a df
                 formation_values = self.formations['value'].squeeze()
             else:
-                formation_values = np.arange(1, formation_order.shape[0]+1)
+                formation_values = np.arange(1, np.asarray(formation_order).shape[0]+1)
         else:
             self._formation_values_set = True
 
