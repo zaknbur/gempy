@@ -49,10 +49,10 @@ class Kriging(object):
     # --- SK needs covariance function instead of variogram function - check
     # --- UK needs completely different setup as I need the coordinates of eacht point in Kriging matrices - check
     # cdist or my distance
-    # --- need to set up my distance calculation properly - check
-    # SGS - check
-    def __init__(self, data, geomodel, geodata, formation_number, kriging_type=None, distance_type=None,
-                 variogram_model=None):
+    # --- need to set up my distance calculation properly also maybe with several planes as suggested by Florian
+    # SGS or not?
+    def __init__(self, data, geomodel, geodata, formation_number, kriging_type=None,
+                 distance_type=None, variogram_model=None, faultmodel=None, an_factor=None, offset=None, var_par=None):
         # here I want to put the basic variables and also the data analysis - or maybe even everything?!
 
         self.geomodel = geomodel
@@ -86,6 +86,35 @@ class Kriging(object):
             variogram_model = 'exponential'
             self.variogram_model = variogram_model
 
+        # figure out fault shit
+        if faultmodel is not None:
+            self.faultmodel = faultmodel
+            self.fault = True
+        else:
+            self.faultmodel = np.zeros((self.geomodel.shape[0], self.geomodel.shape[1]))
+            self.fault = False
+
+        if an_factor is not None:
+            self.an_factor = an_factor
+        else:
+            self.an_factor = 1
+
+        if offset is not None:
+            self.offset = offset
+        else:
+            if faultmodel is not None:
+                print("Constant offset needs to be provided for fault")
+
+        if var_par is not None:
+            self.range_ = var_par[0]
+            self.sill = var_par[1]
+            self.nugget = var_par[2]
+        else:
+            print("WARNING: No variogram parameters passed, arbitrarily set to (100,10,1)")
+            self.range_ = 100
+            self.sill = 10
+            self.nugget = 1
+
         t_init1 = time.time()
         # PART 1: Initializing data and domain
         # set domain data
@@ -98,17 +127,10 @@ class Kriging(object):
         # PART 2: Analyzing the data - mainly getting a variogram/covariance function
         # best case, only do that if not done before, so only of nothing is specified in keywords
         # preset everything for now, maybe make this optional later, either pass sill, range, model, and nugget
-        # or make scipy bestfit
-        self.range_ = 150
-        self.sill = 20
-        self.nugget = 1
+        # or make scipy bestfit # need to be able to set those in kwargs
 
         # PART 3: Acutally performing Kriging
         self.kriging_result, self.result_coord = self.sgs()
-
-        # def get_data():
-        # method to read data from given csv and create pandas dataframe
-        # question if this is really necessary, or if passing a pandas dataframe is sufficient
 
     def init_domain(self):
         """
@@ -126,10 +148,12 @@ class Kriging(object):
         # convert lith block values to int, thats what Miguel suggested --> maybe a better solution required
         geomodel_int = np.round(self.geomodel[0])
         scalar_field_value = self.geomodel[1]
+        # take fault block information for distances
+        faultmodel = self.faultmodel[0, :]
 
         # create the dataframe and populate with data
         d = {'X': self.grid.values[:, 0], 'Y': self.grid.values[:, 1], 'Z': self.grid.values[:, 2],
-             'lith': geomodel_int, 'scalar': scalar_field_value}
+             'lith': geomodel_int, 'scalar': scalar_field_value, 'fault': faultmodel}
         dataframe_aux = pd.DataFrame(data=d)
 
         # cut down to wanted lithology and reset dataframne
@@ -182,20 +206,27 @@ class Kriging(object):
         if self.distance_type == 'euclidian':
             # perform cdist - easy and fast for straight distances
             dist_matrix = cdist(grid_reordered, grid_reordered)
-        elif self.distance_type == 'deformed':
+        elif self.distance_type == 'deformed_A' or self.distance_type == 'deformed_B':
+            # perform algorithm presented in thesis
             dist_matrix = self.dist_all_to_all(grid_reordered)
 
         return dist_matrix, grid_reordered
 
     def dist_all_to_all(self, grid_reordered):
         # 1: Calculte central average plane within domain between top and bottom border
-        med_ver, med_sim, grad_plane = self.create_central_plane()
+        med_ver, med_sim, grad_plane, aux_vert = self.create_central_plane()
+
+        # 1.5 Qick plotting option of refernece plane for crosscheck
+        # fig = plt.figure(figsize=(16,10))
+        # ax = fig.add_subplot(1, 1, 1, projection='3d')
+        # a = ax.plot_trisurf(med_ver[:,0], med_ver[:,1], med_ver[:,2], triangles=med_sim)
+
         # 2: project each point in domain on this plane (by closest point) and save this as reference point
-        ref, perp = self.projection_of_each_point(med_ver, grad_plane, grid_reordered)
+        ref, perp = self.projection_of_each_point(med_ver, grad_plane, grid_reordered, aux_vert)
         # 3: Calculate distances on reference plane by heat method
         dist_clean = self.proj_surface_dist_each_to_each(med_ver, med_sim)
         # 4: Combine results to final distance matrix, here i should set stretch factors
-        dist_matrix = self.distances_grid(ref, perp, dist_clean)
+        dist_matrix = self.distances_grid(ref, perp, dist_clean, grid_reordered)
 
         return dist_matrix
 
@@ -214,29 +245,79 @@ class Kriging(object):
             spacing=((self.extent[1] / self.resolution[0]), (self.extent[3] / self.resolution[1]),
                      (self.extent[5] / self.resolution[2])))
 
-        return vertices, simplices, grad
+        # create aux to cut out vertices at in faultplane (done here by absolute x coordiante) - workaround
+        test = np.where((600 < vertices[:, 0]) ^ (vertices[:, 0] < 400), vertices[:, 0], 1000000)
+        test = test.reshape(vertices[:, 1:].shape[0], 1)
+        aux_vert = np.hstack((test, vertices[:, 1:]))
 
-    def projection_of_each_point(self, ver, plane_grad, grid_reordered):
+        return vertices, simplices, grad, aux_vert
 
-        grid = grid_reordered[:, :3]
-        # create matrix from grid data, as well as empty array for results
-        # grad_check = self.grid_dataframe.as_matrix(('scalar',))[:,0] # old version
-        grad_check = grid_reordered[:, 4]  # new version, seems to be equivalent
-        grad_check = grad_check > plane_grad
-        ref = np.zeros(len(grid))
-        perp = np.zeros(len(grid))
+    def projection_of_each_point(self, ver, plane_grad, grid_reordered, aux_vert):
 
-        # loop through grid to refernce each point to closest point on reference plane by index
-        for i in range(len(grid)):
-            ref[i] = cdist(grid[i].reshape(1, 3), ver).argmin()
-            # get the cdistance to closest point and save it
-            perp[i] = cdist(grid[i].reshape(1, 3), ver).min()
+        # for case that we want total perpendicular distances
+        if self.distance_type == 'deformed_A':
+            grid = grid_reordered[:, :3]
+            # create matrix from grid data, as well as empty array for results
+            # grad_check = self.grid_dataframe.as_matrix(('scalar',))[:,0] # old version
+            grad_check = grid_reordered[:, 4]  # new version, seems to be equivalent
+            grad_check = grad_check > plane_grad
+            ref = np.zeros(len(grid))
+            perp = np.zeros(len(grid))
 
-        # reshape perp to make values either negative or positive (depending on scalar field value)
-        # there has to be an easier way to do it with the a mask
-        for i in range(len(perp)):
-            if grad_check[i] == True:
-                perp[i] = perp[i] * (-1)
+            # loop through grid to refernce each point to closest point on reference plane by index
+            # if fault true, use vertices that exclude fault plane, else all vertices on reference plane
+            if self.fault == True:
+                for i in range(len(grid)):
+                    ref[i] = cdist(grid[i].reshape(1, 3), aux_vert).argmin()
+                    # get the cdistance to closest point and save it
+                    perp[i] = cdist(grid[i].reshape(1, 3), aux_vert).min()
+            else:
+                for i in range(len(grid)):
+                    ref[i] = cdist(grid[i].reshape(1, 3), ver).argmin()
+                    # get the cdistance to closest point and save it
+                    perp[i] = cdist(grid[i].reshape(1, 3), ver).min()
+
+            # reshape perp to make values either negative or positive (depending on scalar field value)
+            # there has to be an easier way to do it with the a mask
+            for i in range(len(perp)):
+                if grad_check[i] == True:
+                    perp[i] = perp[i] * (-1)
+
+        # for case that we want perpendicualr distances based on the gradient field
+        elif self.distance_type == 'deformed_B':
+            grad_top = np.max(self.grid_dataframe.scalar)
+            grad_bot = np.min(self.grid_dataframe.scalar)
+            grid = grid_reordered[:, :3]
+            # create matrix from grid data, as well as empty array for results
+            # grad_check = self.grid_dataframe.as_matrix(('scalar',))[:,0] # old version
+            grad_check = grid_reordered[:, 4]  # new version, seems to be equivalent
+            # grad_check = grad_check > plane_grad
+            ref = np.zeros(len(grid))
+            perp = np.zeros(len(grid))
+
+            # factor calculation for gradient distance to distance with average thickness
+            ave_thick = 200
+            grad_dist = grad_top - grad_bot
+            fact = ave_thick / grad_dist
+
+            # loop through grid to refernce each point to closest point on reference plane by index
+            # if fault true, use vertices that exclude fault plane, else all vertices on reference plane
+            if self.fault == True:
+                for i in range(len(grid)):
+                    ref[i] = cdist(grid[i].reshape(1, 3), aux_vert).argmin()
+                    # get normed distance from gradient distance
+                    perp[i] = (grad_check[i] - plane_grad) * fact
+            else:
+                for i in range(len(grid)):
+                    ref[i] = cdist(grid[i].reshape(1, 3), ver).argmin()
+                    # get normed distance from gradient distance
+                    perp[i] = (grad_check[i] - plane_grad) * fact
+
+            # reshape perp to make values either negative or positive (depending on scalar field value)
+            # there has to be an easier way to do it with the a mask
+            for i in range(len(perp)):
+                if grad_check[i] == True:
+                    perp[i] = perp[i] * (-1)
 
         return ref, perp
 
@@ -257,17 +338,71 @@ class Kriging(object):
 
         return dist_clean
 
-    def distances_grid(self, ref, perp, dist_clean):
-        # stretch factor test, does not work with variogram model like this
-        dist_clean = dist_clean / 10
+    def distances_grid(self, ref, perp, dist_clean, grid_reordered):
 
         dist_matrix = np.zeros([len(ref), len(ref)])
         ref = ref.astype(int)
 
+        # for fault check
+        fault_check = grid_reordered[:, 5]
+        coord = grid_reordered[:, :3]
+
+        '''
+        def plot_fucking_fault_block(coord, fault_check):
+            fig = plt.figure(figsize=(14, 12))
+            ax = Axes3D(fig)
+            ax.axes.set_zlim3d(0,1000)
+            ax.axes.set_xlim3d(0,1000)
+            ax.axes.set_ylim3d(0,20)
+            a = ax.scatter3D(xs=coord[:,0],ys=coord[:,1],zs=coord[:,2], c=fault_check, s=20, marker=',', cmap='viridis', alpha=1)
+            fig.colorbar(a, orientation='horizontal')
+
+        plot_fucking_fault_block(coord, fault_check)
+        '''
+
+        print("Fault:", self.fault)
+        fault_check = np.round(fault_check)
+
+        # minimum offset calculation for control, needs to be slightly higher than offeet used
+        '''
+        min_offset = 10000
+        if fault == True:
+            for i in range(len(ref)):
+                for j in range(len(ref)):
+                    if fault_check[i]!= fault_check[j]:
+                        dist = dist_clean[ref[i]][ref[j]]
+                        if dist < min_offset:
+                            min_offset=dist
+
+        print(min_offset)
+        '''
+        # problem = 0
+
+        # Loop through matrix
         for i in range(len(ref)):
             for j in range(len(ref)):
-                dist_matrix[i][j] = dist_clean[ref[i]][ref[j]] + abs(perp[i] - perp[j])
+                # in case of no fault - business as usual
+                if self.fault == False:
+                    dist_matrix[i][j] = (dist_clean[ref[i]][ref[j]] / self.an_factor) + abs(perp[i] - perp[j])
+                # in case of fault - WTF
+                elif self.fault == True:
+                    # check if points are in different fault blocks
+                    if fault_check[i] != fault_check[j]:
+                        # if yes, try to exclude offset - does not work like this...
+                        if dist_clean[ref[i]][ref[j]] < self.offset:
+                            print(
+                                "Given fault offset seems to be to high, check that distance_type is deformed_B and try slightly smaller offset")
+                            dist_matrix[i][j] = abs(perp[i] - perp[j])
+                        else:
+                            # if not - business as usual
+                            dist_matrix[i][j] = ((dist_clean[ref[i]][ref[j]] - self.offset) / self.an_factor) + abs(
+                                perp[i] - perp[j])
+                    else:
+                        dist_matrix[i][j] = (dist_clean[ref[i]][ref[j]] / self.an_factor) + abs(perp[i] - perp[j])
+                else:
+                    print("Fault not properly defined")
 
+        # print("problem:", problem)
         # algorithm is not optimal for short distances, thus putting them to minium possible cdist value for resolution
         # seems very reasonable, here that is 25
         # dist_matrix[dist_matrix < 25] = 25
