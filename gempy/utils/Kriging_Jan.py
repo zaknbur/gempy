@@ -52,7 +52,8 @@ class Kriging(object):
     # --- need to set up my distance calculation properly also maybe with several planes as suggested by Florian
     # SGS or not?
     def __init__(self, data, geomodel, geodata, formation_number, kriging_type=None,
-                 distance_type=None, variogram_model=None, faultmodel=None, an_factor=None, offset=None, var_par=None):
+                 distance_type=None, variogram_model=None, faultmodel=None, an_factor=None, offset=None, var_par=None,
+                 fz_ext=None):
         # here I want to put the basic variables and also the data analysis - or maybe even everything?!
 
         self.geomodel = geomodel
@@ -104,6 +105,12 @@ class Kriging(object):
         else:
             if faultmodel is not None:
                 print("Constant offset needs to be provided for fault")
+
+        if fz_ext is not None:
+            self.fz_ext = fz_ext
+        else:
+            if faultmodel is not None:
+                print("No extent of faultzone given")
 
         if var_par is not None:
             self.range_ = var_par[0]
@@ -214,7 +221,7 @@ class Kriging(object):
 
     def dist_all_to_all(self, grid_reordered):
         # 1: Calculte central average plane within domain between top and bottom border
-        med_ver, med_sim, grad_plane, aux_vert = self.create_central_plane()
+        med_ver, med_sim, grad_plane, aux_vert1, aux_vert2 = self.create_central_plane()
 
         # 1.5 Qick plotting option of refernece plane for crosscheck
         # fig = plt.figure(figsize=(16,10))
@@ -222,7 +229,7 @@ class Kriging(object):
         # a = ax.plot_trisurf(med_ver[:,0], med_ver[:,1], med_ver[:,2], triangles=med_sim)
 
         # 2: project each point in domain on this plane (by closest point) and save this as reference point
-        ref, perp = self.projection_of_each_point(med_ver, grad_plane, grid_reordered, aux_vert)
+        ref, perp = self.projection_of_each_point(med_ver, grad_plane, grid_reordered, aux_vert1, aux_vert2)
         # 3: Calculate distances on reference plane by heat method
         dist_clean = self.proj_surface_dist_each_to_each(med_ver, med_sim)
         # 4: Combine results to final distance matrix, here i should set stretch factors
@@ -245,14 +252,29 @@ class Kriging(object):
             spacing=((self.extent[1] / self.resolution[0]), (self.extent[3] / self.resolution[1]),
                      (self.extent[5] / self.resolution[2])))
 
+        # for not checking fault block when projecting
         # create aux to cut out vertices at in faultplane (done here by absolute x coordiante) - workaround
-        test = np.where((600 < vertices[:, 0]) ^ (vertices[:, 0] < 400), vertices[:, 0], 1000000)
+        test = np.where((self.fz_ext[1] < vertices[:, 0]) ^ (vertices[:, 0] < self.fz_ext[0]), vertices[:, 0], 1000000)
         test = test.reshape(vertices[:, 1:].shape[0], 1)
         aux_vert = np.hstack((test, vertices[:, 1:]))
 
-        return vertices, simplices, grad, aux_vert
 
-    def projection_of_each_point(self, ver, plane_grad, grid_reordered, aux_vert):
+        # for checking fault block when projecting
+        test2 = np.where((self.fz_ext[1] < vertices[:, 0]), vertices[:, 0], 1000000)
+        test1 = np.where((vertices[:, 0] < self.fz_ext[0]), vertices[:, 0], 1000000)
+        test2 = test2.reshape(vertices[:, 1:].shape[0], 1)
+        test1 = test1.reshape(vertices[:, 1:].shape[0], 1)
+        aux_vert2 = np.hstack((test2, vertices[:, 1:]))
+        aux_vert1 = np.hstack((test1, vertices[:, 1:]))
+
+        return vertices, simplices, grad, aux_vert1, aux_vert2
+
+
+    def projection_of_each_point(self, ver, plane_grad, grid_reordered, aux_vert1, aux_vert2):
+
+        # only if check fault for projection, try only for B here
+        fault_check = grid_reordered[:, 5]
+        fault_check = np.round(fault_check)
 
         # for case that we want total perpendicular distances
         if self.distance_type == 'deformed_A':
@@ -304,7 +326,10 @@ class Kriging(object):
             # if fault true, use vertices that exclude fault plane, else all vertices on reference plane
             if self.fault == True:
                 for i in range(len(grid)):
-                    ref[i] = cdist(grid[i].reshape(1, 3), aux_vert).argmin()
+                    if fault_check[i]==1:
+                        ref[i] = cdist(grid[i].reshape(1, 3), aux_vert1).argmin()
+                    else:
+                        ref[i] = cdist(grid[i].reshape(1, 3), aux_vert2).argmin()
                     # get normed distance from gradient distance
                     perp[i] = (grad_check[i] - plane_grad) * fact
             else:
@@ -364,9 +389,9 @@ class Kriging(object):
         fault_check = np.round(fault_check)
 
         # minimum offset calculation for control, needs to be slightly higher than offeet used
-        '''
+
         min_offset = 10000
-        if fault == True:
+        if self.fault == True:
             for i in range(len(ref)):
                 for j in range(len(ref)):
                     if fault_check[i]!= fault_check[j]:
@@ -375,7 +400,7 @@ class Kriging(object):
                             min_offset=dist
 
         print(min_offset)
-        '''
+
         # problem = 0
 
         # Loop through matrix

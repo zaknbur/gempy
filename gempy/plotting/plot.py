@@ -816,7 +816,7 @@ def extract_countours(geo_data,interp_data,cell_number,direction='y',fb=None,lb=
     Returns: nothing, it just plots
 
     """
-    fault_colors = ['#9f0052', '#ff3f20', '#ffbe00']
+    fault_colors = ['#000000', '#ff3f20', '#ffbe00']
     cm_fault = matplotlib.colors.LinearSegmentedColormap.from_list('faults', fault_colors, N=5)
     lith_colors = ['#000000', '#000000', '#000000', '#000000', '#000000']
     cm_lith = matplotlib.colors.LinearSegmentedColormap.from_list('lith_colors', lith_colors, N=5)
