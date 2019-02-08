@@ -217,6 +217,8 @@ class Kriging(object):
             # perform algorithm presented in thesis
             dist_matrix = self.dist_all_to_all(grid_reordered)
 
+        self.dist_matrix_plt = dist_matrix
+
         return dist_matrix, grid_reordered
 
     def dist_all_to_all(self, grid_reordered):
@@ -252,20 +254,20 @@ class Kriging(object):
             spacing=((self.extent[1] / self.resolution[0]), (self.extent[3] / self.resolution[1]),
                      (self.extent[5] / self.resolution[2])))
 
-        # for not checking fault block when projecting
-        # create aux to cut out vertices at in faultplane (done here by absolute x coordiante) - workaround
-        test = np.where((self.fz_ext[1] < vertices[:, 0]) ^ (vertices[:, 0] < self.fz_ext[0]), vertices[:, 0], 1000000)
-        test = test.reshape(vertices[:, 1:].shape[0], 1)
-        aux_vert = np.hstack((test, vertices[:, 1:]))
 
 
-        # for checking fault block when projecting
-        test2 = np.where((self.fz_ext[1] < vertices[:, 0]), vertices[:, 0], 1000000)
-        test1 = np.where((vertices[:, 0] < self.fz_ext[0]), vertices[:, 0], 1000000)
-        test2 = test2.reshape(vertices[:, 1:].shape[0], 1)
-        test1 = test1.reshape(vertices[:, 1:].shape[0], 1)
-        aux_vert2 = np.hstack((test2, vertices[:, 1:]))
-        aux_vert1 = np.hstack((test1, vertices[:, 1:]))
+
+        if self.fault == True:
+            # for checking fault block when projecting
+            test2 = np.where((self.fz_ext[1] < vertices[:, 0]), vertices[:, 0], 1000000)
+            test1 = np.where((vertices[:, 0] < self.fz_ext[0]), vertices[:, 0], 1000000)
+            test2 = test2.reshape(vertices[:, 1:].shape[0], 1)
+            test1 = test1.reshape(vertices[:, 1:].shape[0], 1)
+            aux_vert2 = np.hstack((test2, vertices[:, 1:]))
+            aux_vert1 = np.hstack((test1, vertices[:, 1:]))
+        else:
+            aux_vert1 = 0
+            aux_vert2 = 0
 
         return vertices, simplices, grad, aux_vert1, aux_vert2
 
@@ -273,8 +275,8 @@ class Kriging(object):
     def projection_of_each_point(self, ver, plane_grad, grid_reordered, aux_vert1, aux_vert2):
 
         # only if check fault for projection, try only for B here
-        fault_check = grid_reordered[:, 5]
-        fault_check = np.round(fault_check)
+        self.fault_check = grid_reordered[:, 5]
+        self.fault_check = np.round(self.fault_check)
 
         # for case that we want total perpendicular distances
         if self.distance_type == 'deformed_A':
@@ -326,10 +328,10 @@ class Kriging(object):
             # if fault true, use vertices that exclude fault plane, else all vertices on reference plane
             if self.fault == True:
                 for i in range(len(grid)):
-                    if fault_check[i]==1:
-                        ref[i] = cdist(grid[i].reshape(1, 3), aux_vert1).argmin()
-                    else:
+                    if self.fault_check[i]==1:
                         ref[i] = cdist(grid[i].reshape(1, 3), aux_vert2).argmin()
+                    else:
+                        ref[i] = cdist(grid[i].reshape(1, 3), aux_vert1).argmin()
                     # get normed distance from gradient distance
                     perp[i] = (grad_check[i] - plane_grad) * fact
             else:
@@ -370,7 +372,7 @@ class Kriging(object):
 
         # for fault check
         fault_check = grid_reordered[:, 5]
-        coord = grid_reordered[:, :3]
+        #coord = grid_reordered[:, :3]
 
         '''
         def plot_fucking_fault_block(coord, fault_check):
@@ -401,29 +403,28 @@ class Kriging(object):
 
         print(min_offset)
 
-        # problem = 0
+        print(self.an_factor)
 
         # Loop through matrix
         for i in range(len(ref)):
             for j in range(len(ref)):
                 # in case of no fault - business as usual
                 if self.fault == False:
-                    dist_matrix[i][j] = (dist_clean[ref[i]][ref[j]] / self.an_factor) + abs(perp[i] - perp[j])
+                    #dist_matrix[i][j] = (dist_clean[ref[i]][ref[j]] / self.an_factor) + abs(perp[i] - perp[j])
+                    dist_matrix[i][j] = np.sqrt(((dist_clean[ref[i]][ref[j]] / self.an_factor))**2+(abs(perp[i] - perp[j])**2))
                 # in case of fault - WTF
                 elif self.fault == True:
                     # check if points are in different fault blocks
                     if fault_check[i] != fault_check[j]:
                         # if yes, try to exclude offset - does not work like this...
-                        if dist_clean[ref[i]][ref[j]] < self.offset:
-                            print(
-                                "Given fault offset seems to be to high, check that distance_type is deformed_B and try slightly smaller offset")
-                            dist_matrix[i][j] = abs(perp[i] - perp[j])
-                        else:
-                            # if not - business as usual
-                            dist_matrix[i][j] = ((dist_clean[ref[i]][ref[j]] - self.offset) / self.an_factor) + abs(
-                                perp[i] - perp[j])
+                        #dist_matrix[i][j] = ((dist_clean[ref[i]][ref[j]] - self.offset) / self.an_factor) + abs(perp[i] - perp[j])
+                        dist_matrix[i][j] = np.sqrt(
+                            ((dist_clean[ref[i]][ref[j]] - self.offset) / self.an_factor) ** 2 + (
+                                        abs(perp[i] - perp[j]) ** 2))
                     else:
-                        dist_matrix[i][j] = (dist_clean[ref[i]][ref[j]] / self.an_factor) + abs(perp[i] - perp[j])
+                        #dist_matrix[i][j] = (dist_clean[ref[i]][ref[j]] / self.an_factor) + abs(perp[i] - perp[j])
+                        dist_matrix[i][j] = np.sqrt(
+                            ((dist_clean[ref[i]][ref[j]] / self.an_factor)) ** 2 + (abs(perp[i] - perp[j]) ** 2))
                 else:
                     print("Fault not properly defined")
 
@@ -546,8 +547,8 @@ class Kriging(object):
         w = np.zeros((shape + 1))
 
         # Faster matrix building approach, no loops
-        C[:shape, :shape] = self.gaussian_variogram_model(b)
-        c[:shape] = self.gaussian_variogram_model(a)
+        C[:shape, :shape] = self.exponential_variogram_model(b)
+        c[:shape] = self.exponential_variogram_model(b)
 
         # matrix setup - compare pykrige
         np.fill_diagonal(C, 0)  # is that OK

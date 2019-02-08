@@ -387,17 +387,21 @@ class PlotData2D(object):
 
         _a, _b, _c, extent_val, x, y = self._slice(direction, cell_number)[:-2]
 
-        plt.contour(scalar_field.reshape(
+        cs = plt.contour(scalar_field.reshape(
             self._data.resolution[0], self._data.resolution[1], self._data.resolution[2])[_a, _b, _c].T,
                     N,
                     extent=extent_val, *args,
                     **kwargs)
 
+        #plt.clabel(cs, inline=1, fontsize=15)
+
+        '''
         plt.contourf(scalar_field.reshape(
             self._data.resolution[0], self._data.resolution[1], self._data.resolution[2])[_a, _b, _c].T,
                     N,
                     extent=extent_val, alpha=0.6, *args,
                     **kwargs)
+        '''
 
         if 'colorbar' in kwargs:
             plt.colorbar()
