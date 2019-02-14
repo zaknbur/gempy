@@ -447,6 +447,11 @@ class Kriging(object):
         gamma = self.sill * (np.exp(-d ** 2. / (self.range_) ** 2.))
         return gamma
 
+    def exponential_covariance_model(self, d):
+        #self.sill = self.inp_var / self.inp_mean
+        gamma = self.sill * (np.exp(-(np.absolute(d)/ (self.range_))))
+        return gamma
+
     def exponential_variogram_model(self, d):
         psill = self.sill - self.nugget
         gamma = psill * (1. - np.exp(-(np.absolute(d) / (self.range_)))) + self.nugget
@@ -465,20 +470,20 @@ class Kriging(object):
         w = np.zeros((shape))
 
         # Faster matrix building approach, no loops
-        C[:shape, :shape] = self.gaussian_covariance_model(b)
-        c[:shape] = self.gaussian_covariance_model(a)
+        C[:shape, :shape] = self.exponential_covariance_model(b)
+        c[:shape] = self.exponential_covariance_model(a)
 
         # nugget effect
-        np.fill_diagonal(C, 10)
+        np.fill_diagonal(C, self.sill)
 
         w = np.linalg.solve(C, c)
 
         # SGS version - taking result from normal distribution with kriging mean an standard deviation
-        # result = np.random.normal(inp_mean + np.sum(w * (prop-inp_mean)), scale = 0) #scale=np.sqrt(variance-np.sum(w*c)))
+        result = np.random.normal(self.inp_mean + np.sum(w * (prop-self.inp_mean)), scale = np.sqrt(self.sill-np.sum(w*c)))
         # if I use other scale it gets wild
 
         # direct version, calculating result from weights. Need to be normed to one
-        result = self.inp_mean + np.sum(w * (prop - self.inp_mean))
+        #result = self.inp_mean + np.sum(w * (prop - self.inp_mean))
 
         return result
 
@@ -548,7 +553,7 @@ class Kriging(object):
 
         # Faster matrix building approach, no loops
         C[:shape, :shape] = self.exponential_variogram_model(b)
-        c[:shape] = self.exponential_variogram_model(b)
+        c[:shape] = self.exponential_variogram_model(a)
 
         # matrix setup - compare pykrige
         np.fill_diagonal(C, 0)  # is that OK
@@ -570,10 +575,10 @@ class Kriging(object):
         w = np.linalg.solve(C, c)
 
         # SGS version - in UK case the scale (standard deviation) is not yet implemented/correct
-        # result = np.random.normal(np.sum(w[:shape] * data_v), scale=np.sqrt(w[shape]-gaussian_variogram_model(0)+np.sum(w[:shape]*c[:shape])))
+        result = np.random.normal(np.sum(w[:shape] * prop), scale=np.sqrt(np.sum(w[:shape]*c[:shape])+np.sum(w[shape:]*c[shape:])))
 
         # direct version, calculating result from weights.
-        result = np.sum(w[:shape] * prop)
+        # result = np.sum(w[:shape] * prop)
 
         return result
 
