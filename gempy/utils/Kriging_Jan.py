@@ -222,20 +222,46 @@ class Kriging(object):
         return dist_matrix, grid_reordered
 
     def dist_all_to_all(self, grid_reordered):
-        # 1: Calculte central average plane within domain between top and bottom border
+        '''
+        Method for calculating non-euclidian distances in GemPy. Four required steps are wrapped in separate methods.
+        Args:
+            grid_reordered: Spatial (x,y,z) coordinated of discretized GemPy grid, reordered in random path as
+                            defined for SGS run.
+        Returns:
+            dist_matrix: Matrix containing distances from each discrete grid point to each other grid point,
+                            ordered as defined by SGS path.
+        '''
+        tstep1 = 0
+        tstep2 = 0
+        tstep3 = 0
+        tstep4 = 0
+
+        t_prestep1 = time.time()
+        # 1: Calculate reference plane within domain between top and bottom border (based on scalar field value)
         med_ver, med_sim, grad_plane, aux_vert1, aux_vert2 = self.create_central_plane()
+        t_poststep1 = time.time()
+        print("Step1", t_poststep1-t_prestep1)
 
         # 1.5 Qick plotting option of refernece plane for crosscheck
         # fig = plt.figure(figsize=(16,10))
         # ax = fig.add_subplot(1, 1, 1, projection='3d')
         # a = ax.plot_trisurf(med_ver[:,0], med_ver[:,1], med_ver[:,2], triangles=med_sim)
 
-        # 2: project each point in domain on this plane (by closest point) and save this as reference point
+        # 2: Projection of each point in domain on reference plane (by closest point) and save reference point
+        #    Definition of perpendicular distance portion either by method A or method B
         ref, perp = self.projection_of_each_point(med_ver, grad_plane, grid_reordered, aux_vert1, aux_vert2)
-        # 3: Calculate distances on reference plane by heat method
+        t_poststep2 = time.time()
+        print("Step2", t_poststep1 - t_poststep2)
+
+        # 3: Calculate all distances between vertices on reference plane by heat method
         dist_clean = self.proj_surface_dist_each_to_each(med_ver, med_sim)
-        # 4: Combine results to final distance matrix, here i should set stretch factors
+        t_poststep3 = time.time()
+        print("Step3", t_poststep2 - t_poststep3)
+
+        # 4: Combine results to final distance matrix, applying anisotropy factor if desired
         dist_matrix = self.distances_grid(ref, perp, dist_clean, grid_reordered)
+        t_poststep4 = time.time()
+        print("Step4", t_poststep3 - t_poststep4)
 
         return dist_matrix
 
@@ -375,7 +401,7 @@ class Kriging(object):
         #coord = grid_reordered[:, :3]
 
         '''
-        def plot_fucking_fault_block(coord, fault_check):
+        def plot_fault_block_krig(coord, fault_check):
             fig = plt.figure(figsize=(14, 12))
             ax = Axes3D(fig)
             ax.axes.set_zlim3d(0,1000)
@@ -387,11 +413,11 @@ class Kriging(object):
         plot_fucking_fault_block(coord, fault_check)
         '''
 
-        print("Fault:", self.fault)
+        #print("Fault:", self.fault)
         fault_check = np.round(fault_check)
 
         # minimum offset calculation for control, needs to be slightly higher than offeet used
-
+        '''
         min_offset = 10000
         if self.fault == True:
             for i in range(len(ref)):
@@ -400,11 +426,24 @@ class Kriging(object):
                         dist = dist_clean[ref[i]][ref[j]]
                         if dist < min_offset:
                             min_offset=dist
-
+        
         print(min_offset)
-
         print(self.an_factor)
+        '''
 
+        '''
+        # meshgrid version that kills my memory
+        ref_range = np.arange(ref.shape[0])
+        i, j = np.meshgrid(ref_range, ref_range)
+        dist_matrix[i][j] = np.sqrt(
+            ((dist_clean[ref[i]][ref[j]] / self.an_factor)) ** 2 + (abs(perp[i] - perp[j]) ** 2))
+        '''
+
+        for i in range(len(ref)):
+            dist_matrix[i][:] = np.sqrt(
+                ((dist_clean[ref[i]][ref[:]] / self.an_factor)) ** 2 + (abs(perp[i] - perp[:]) ** 2))
+                
+        '''
         # Loop through matrix
         for i in range(len(ref)):
             for j in range(len(ref)):
@@ -427,6 +466,7 @@ class Kriging(object):
                             ((dist_clean[ref[i]][ref[j]] / self.an_factor)) ** 2 + (abs(perp[i] - perp[j]) ** 2))
                 else:
                     print("Fault not properly defined")
+        '''
 
         # print("problem:", problem)
         # algorithm is not optimal for short distances, thus putting them to minium possible cdist value for resolution
@@ -458,36 +498,53 @@ class Kriging(object):
         return gamma
 
     def simple_kriging(self, a, b, prop):
+        '''
+        Method for simple kriging calcualtion.
+        Args:
+            a: distance matrix containing all distances between target point and moving neighbourhood
+            b: distance matrix containing all inter-point distances between locations in moving neighbourhood
+            prop: array containing scalar property values of locations in moving neighbourhood
+        Returns:
+            result: single scalar property value estimated for target location
+        '''
 
-        # !!! SK still needs work: result only works with diagonal (nugget effect???) fill of 10 and covariance
-        # function seems more than shady ... but choosing kriging type works for all three options now
-        # Also SGS does only work with scale = 0 so does not really wor at all :/
+        #just for my case
+        self.inp_mean=20
 
-        # empty matrix buildung
+        # empty matrix building
         shape = len(a)
         C = np.zeros((shape, shape))
         c = np.zeros((shape))
         w = np.zeros((shape))
 
-        # Faster matrix building approach, no loops
+        # Filling matrices with covariances based on calculated distances
         C[:shape, :shape] = self.exponential_covariance_model(b)
         c[:shape] = self.exponential_covariance_model(a)
 
-        # nugget effect
+        # nugget effect for simple kriging
         np.fill_diagonal(C, self.sill)
 
+        # calculate weights by solving system
         w = np.linalg.solve(C, c)
 
-        # SGS version - taking result from normal distribution with kriging mean an standard deviation
+        # SGS version - taking result from normal distribution defined by kriging mean an standard deviation
         result = np.random.normal(self.inp_mean + np.sum(w * (prop-self.inp_mean)), scale = np.sqrt(self.sill-np.sum(w*c)))
-        # if I use other scale it gets wild
 
         # direct version, calculating result from weights. Need to be normed to one
-        #result = self.inp_mean + np.sum(w * (prop - self.inp_mean))
+        # result = np.random.normal(self.inp_mean + np.sum(w * (prop - self.inp_mean))
 
         return result
 
     def ordinary_kriging(self, a, b, prop, target):
+        '''
+        Method for simple kriging calcualtion.
+        Args:
+            a: distance matrix containing all distances between target point and moving neighbourhood
+            b: distance matrix containing all inter-point distances between locations in moving neighbourhood
+            prop: array containing scalar property values of locations in moving neighbourhood
+        Returns:
+            result: single scalar property value estimated for target location
+        '''
 
         # empty matrix building
         shape = len(a)

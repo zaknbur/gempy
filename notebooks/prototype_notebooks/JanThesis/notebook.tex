@@ -141,7 +141,7 @@
     \def\gt{>}
     \def\lt{<}
     % Document parameters
-    \title{Test\_Schuster}
+    \title{Untitled}
     
     
     
@@ -281,211 +281,42 @@
 
     
     \begin{Verbatim}[commandchars=\\\{\}]
-{\color{incolor}In [{\color{incolor}1}]:} \PY{c+c1}{\PYZsh{} Das sind zusätzliche libraries die ich für die mathematischen Operationen}
-        \PY{c+c1}{\PYZsh{} und zum Plotten benutze. In Matlab gibt es definitv was Ähnliches}
-        \PY{k+kn}{import} \PY{n+nn}{numpy} \PY{k}{as} \PY{n+nn}{np}
-        \PY{k+kn}{from} \PY{n+nn}{matplotlib} \PY{k}{import} \PY{n}{pyplot} \PY{k}{as} \PY{n}{plt}
-        \PY{k+kn}{from} \PY{n+nn}{mpl\PYZus{}toolkits}\PY{n+nn}{.}\PY{n+nn}{mplot3d} \PY{k}{import} \PY{n}{Axes3D}
-        \PY{k+kn}{import} \PY{n+nn}{pandas} \PY{k}{as} \PY{n+nn}{pd}
-\end{Verbatim}
-
-
-    \begin{Verbatim}[commandchars=\\\{\}]
-{\color{incolor}In [{\color{incolor}2}]:} \PY{c+c1}{\PYZsh{} Auslesen der CSV files}
-        \PY{n}{data\PYZus{}cam1} \PY{o}{=} \PY{n}{pd}\PY{o}{.}\PY{n}{read\PYZus{}csv}\PY{p}{(}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Kinect\PYZus{}1807\PYZus{}1\PYZus{}weit\PYZus{}test2\PYZus{}HU.csv}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
-        \PY{n}{data\PYZus{}cam2} \PY{o}{=} \PY{n}{pd}\PY{o}{.}\PY{n}{read\PYZus{}csv}\PY{p}{(}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Kinect\PYZus{}1807\PYZus{}2\PYZus{}weit\PYZus{}test2\PYZus{}HU.csv}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
-\end{Verbatim}
-
-
-    \begin{Verbatim}[commandchars=\\\{\}]
-{\color{incolor}In [{\color{incolor}3}]:} \PY{c+c1}{\PYZsh{} hier lasse ich mir die ersten Zeilen zur Kontrolle anzeigen}
-        \PY{n}{data\PYZus{}cam1}\PY{o}{.}\PY{n}{head}\PY{p}{(}\PY{p}{)}
-\end{Verbatim}
-
-
-\begin{Verbatim}[commandchars=\\\{\}]
-{\color{outcolor}Out[{\color{outcolor}3}]:}        Location         x         y         z
-        0   AnkleLeft.X -0.166953 -0.652160  2.957230
-        1  AnkleRight.X  0.105894 -0.670519  3.035919
-        2   ElbowLeft.X -0.304382  0.407180  2.942685
-        3  ElbowRight.X  0.238033  0.375192  3.071859
-        4    FootLeft.X -0.169871 -0.749607  2.869495
-\end{Verbatim}
-            
-    \begin{Verbatim}[commandchars=\\\{\}]
-{\color{incolor}In [{\color{incolor}4}]:} \PY{c+c1}{\PYZsh{} Plotten der Daten }
-        \PY{n}{fig} \PY{o}{=} \PY{n}{plt}\PY{o}{.}\PY{n}{figure}\PY{p}{(}\PY{n}{figsize}\PY{o}{=}\PY{p}{(}\PY{l+m+mi}{16}\PY{p}{,}\PY{l+m+mi}{12}\PY{p}{)}\PY{p}{)}
-        \PY{n}{ax} \PY{o}{=} \PY{n}{Axes3D}\PY{p}{(}\PY{n}{fig}\PY{p}{)}
-        \PY{n}{ax}\PY{o}{.}\PY{n}{axes}\PY{o}{.}\PY{n}{set\PYZus{}zlim3d}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,} \PY{l+m+mi}{2}\PY{p}{)}
-        \PY{n}{ax}\PY{o}{.}\PY{n}{axes}\PY{o}{.}\PY{n}{set\PYZus{}xlim3d}\PY{p}{(}\PY{o}{\PYZhy{}}\PY{l+m+mf}{0.25}\PY{p}{,} \PY{l+m+mi}{2}\PY{p}{)}
-        \PY{n}{ax}\PY{o}{.}\PY{n}{axes}\PY{o}{.}\PY{n}{set\PYZus{}ylim3d}\PY{p}{(}\PY{o}{\PYZhy{}}\PY{l+m+mi}{1}\PY{p}{,} \PY{l+m+mi}{2}\PY{p}{)}
-        \PY{n}{ax}\PY{o}{.}\PY{n}{scatter3D}\PY{p}{(}\PY{n}{xs}\PY{o}{=}\PY{n}{data\PYZus{}cam1}\PY{o}{.}\PY{n}{x}\PY{p}{,}\PY{n}{ys}\PY{o}{=}\PY{n}{data\PYZus{}cam1}\PY{o}{.}\PY{n}{z}\PY{p}{,}\PY{n}{zs}\PY{o}{=}\PY{n}{data\PYZus{}cam1}\PY{o}{.}\PY{n}{y}\PY{p}{,} \PY{n}{c}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{red}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{s}\PY{o}{=}\PY{l+m+mi}{50}\PY{p}{)}
-        \PY{n}{ax}\PY{o}{.}\PY{n}{scatter3D}\PY{p}{(}\PY{n}{xs}\PY{o}{=}\PY{n}{data\PYZus{}cam2}\PY{o}{.}\PY{n}{x}\PY{p}{,}\PY{n}{ys}\PY{o}{=}\PY{n}{data\PYZus{}cam2}\PY{o}{.}\PY{n}{z}\PY{p}{,}\PY{n}{zs}\PY{o}{=}\PY{n}{data\PYZus{}cam2}\PY{o}{.}\PY{n}{y}\PY{p}{,} \PY{n}{c}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{blue}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{s}\PY{o}{=}\PY{l+m+mi}{50}\PY{p}{)}
-\end{Verbatim}
-
-
-\begin{Verbatim}[commandchars=\\\{\}]
-{\color{outcolor}Out[{\color{outcolor}4}]:} <mpl\_toolkits.mplot3d.art3d.Path3DCollection at 0x23b6ede99e8>
-\end{Verbatim}
-            
-    \begin{center}
-    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_3_1.png}
-    \end{center}
-    { \hspace*{\fill} \\}
-    
-    \begin{Verbatim}[commandchars=\\\{\}]
-{\color{incolor}In [{\color{incolor}5}]:} \PY{c+c1}{\PYZsh{} Ich extrahiere die x, y, z Koordinaten aus der Tabelle und speichere sie als Matrix,}
-        \PY{c+c1}{\PYZsh{} Source Points sind von der Hauptkamera, destination points von der Anderen}
-        \PY{c+c1}{\PYZsh{} hier tausche ich auch y und z Koordinate wegen deinem komischen Sytem}
-        \PY{n}{source\PYZus{}points} \PY{o}{=} \PY{n}{data\PYZus{}cam1}\PY{o}{.}\PY{n}{as\PYZus{}matrix}\PY{p}{(}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{x}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{z}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{y}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}\PY{p}{)}
-        \PY{n}{dst\PYZus{}points} \PY{o}{=} \PY{n}{data\PYZus{}cam2}\PY{o}{.}\PY{n}{as\PYZus{}matrix}\PY{p}{(}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{x}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{z}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{y}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}\PY{p}{)}
+{\color{incolor}In [{\color{incolor} }]:} \PY{k}{def} \PY{n+nf}{simple\PYZus{}kriging}\PY{p}{(}\PY{n+nb+bp}{self}\PY{p}{,} \PY{n}{a}\PY{p}{,} \PY{n}{b}\PY{p}{,} \PY{n}{prop}\PY{p}{)}\PY{p}{:}
+            \PY{l+s+sd}{\PYZsq{}\PYZsq{}\PYZsq{}}
+        \PY{l+s+sd}{    Method for simple kriging calcualtion. }
+        \PY{l+s+sd}{    Args:}
+        \PY{l+s+sd}{        a: distance matrix containing all distances between target point and moving neighbourhood}
+        \PY{l+s+sd}{        b: distance matrix containing all inter\PYZhy{}point distances between locations in moving neighbourhood }
+        \PY{l+s+sd}{        prop: array containing scalar property values of locations in moving neighbourhood}
+        \PY{l+s+sd}{    Returns:}
+        \PY{l+s+sd}{        result: single scalar property value estimated for target location}
+        \PY{l+s+sd}{    \PYZsq{}\PYZsq{}\PYZsq{}}
+            \PY{c+c1}{\PYZsh{} empty matrix building}
+            \PY{n}{shape} \PY{o}{=} \PY{n+nb}{len}\PY{p}{(}\PY{n}{a}\PY{p}{)}
+            \PY{n}{C} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{zeros}\PY{p}{(}\PY{p}{(}\PY{n}{shape}\PY{p}{,} \PY{n}{shape}\PY{p}{)}\PY{p}{)}
+            \PY{n}{c} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{zeros}\PY{p}{(}\PY{p}{(}\PY{n}{shape}\PY{p}{)}\PY{p}{)}
+            \PY{n}{w} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{zeros}\PY{p}{(}\PY{p}{(}\PY{n}{shape}\PY{p}{)}\PY{p}{)}
         
-        \PY{c+c1}{\PYZsh{} Ich füge eine zusätzliche Spalte mit Einsen ans Ende der beiden Matrizen }
-        \PY{n}{aux} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{ones}\PY{p}{(}\PY{p}{(}\PY{l+m+mi}{25}\PY{p}{,} \PY{l+m+mi}{1}\PY{p}{)}\PY{p}{)}
-        \PY{n}{source\PYZus{}points} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{hstack}\PY{p}{(}\PY{p}{(}\PY{n}{source\PYZus{}points}\PY{p}{,} \PY{n}{aux}\PY{p}{)}\PY{p}{)}
-        \PY{n}{dst\PYZus{}points} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{hstack}\PY{p}{(}\PY{p}{(}\PY{n}{dst\PYZus{}points}\PY{p}{,} \PY{n}{aux}\PY{p}{)}\PY{p}{)}
+            \PY{c+c1}{\PYZsh{} Filling matrices with covariances based on calculated distances}
+            \PY{n}{C}\PY{p}{[}\PY{p}{:}\PY{n}{shape}\PY{p}{,} \PY{p}{:}\PY{n}{shape}\PY{p}{]} \PY{o}{=} \PY{n+nb+bp}{self}\PY{o}{.}\PY{n}{exponential\PYZus{}covariance\PYZus{}model}\PY{p}{(}\PY{n}{b}\PY{p}{)}
+            \PY{n}{c}\PY{p}{[}\PY{p}{:}\PY{n}{shape}\PY{p}{]} \PY{o}{=} \PY{n+nb+bp}{self}\PY{o}{.}\PY{n}{exponential\PYZus{}covariance\PYZus{}model}\PY{p}{(}\PY{n}{a}\PY{p}{)}
+        
+            \PY{c+c1}{\PYZsh{} nugget effect for simple kriging}
+            \PY{n}{np}\PY{o}{.}\PY{n}{fill\PYZus{}diagonal}\PY{p}{(}\PY{n}{C}\PY{p}{,} \PY{n+nb+bp}{self}\PY{o}{.}\PY{n}{sill}\PY{p}{)}
+        
+            \PY{c+c1}{\PYZsh{} calculate weights by solving system}
+            \PY{n}{w} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{linalg}\PY{o}{.}\PY{n}{solve}\PY{p}{(}\PY{n}{C}\PY{p}{,} \PY{n}{c}\PY{p}{)}
+        
+            \PY{c+c1}{\PYZsh{} SGS version \PYZhy{} taking result from normal distribution defined by kriging mean an standard deviation}
+            \PY{n}{result} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{random}\PY{o}{.}\PY{n}{normal}\PY{p}{(}\PY{n+nb+bp}{self}\PY{o}{.}\PY{n}{inp\PYZus{}mean} \PY{o}{+} \PY{n}{np}\PY{o}{.}\PY{n}{sum}\PY{p}{(}\PY{n}{w} \PY{o}{*} \PY{p}{(}\PY{n}{prop}\PY{o}{\PYZhy{}}\PY{n+nb+bp}{self}\PY{o}{.}\PY{n}{inp\PYZus{}mean}\PY{p}{)}\PY{p}{)}\PY{p}{,} \PY{n}{scale} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{sqrt}\PY{p}{(}\PY{n+nb+bp}{self}\PY{o}{.}\PY{n}{sill}\PY{o}{\PYZhy{}}\PY{n}{np}\PY{o}{.}\PY{n}{sum}\PY{p}{(}\PY{n}{w}\PY{o}{*}\PY{n}{c}\PY{p}{)}\PY{p}{)}\PY{p}{)}
+        
+            \PY{c+c1}{\PYZsh{} direct version, calculating result from weights. Need to be normed to one}
+            \PY{c+c1}{\PYZsh{} result = np.random.normal(self.inp\PYZus{}mean + np.sum(w * (prop \PYZhy{} self.inp\PYZus{}mean))}
+        
+            \PY{k}{return} \PY{n}{result}
 \end{Verbatim}
 
 
-    \begin{Verbatim}[commandchars=\\\{\}]
-{\color{incolor}In [{\color{incolor}6}]:} \PY{c+c1}{\PYZsh{} Lösen des Gleichungsystems, hier brauchst du eine äquivalente Funktion aus Matlab}
-        \PY{n}{transform\PYZus{}mat}\PY{p}{,} \PY{n}{res}\PY{p}{,} \PY{n}{rank}\PY{p}{,} \PY{n}{s} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{linalg}\PY{o}{.}\PY{n}{lstsq}\PY{p}{(}\PY{n}{dst\PYZus{}points}\PY{p}{,} \PY{n}{source\PYZus{}points}\PY{p}{,} \PY{n}{rcond}\PY{o}{=}\PY{k+kc}{None}\PY{p}{)}
-\end{Verbatim}
-
-
-    \begin{Verbatim}[commandchars=\\\{\}]
-{\color{incolor}In [{\color{incolor}7}]:} \PY{c+c1}{\PYZsh{} eine kleine Änderung des Datentyps, brauche ich aber nur hier in meinem speziellen Fall}
-        \PY{n}{transform\PYZus{}mat} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{array}\PY{p}{(}\PY{n}{transform\PYZus{}mat}\PY{p}{)}
-        \PY{c+c1}{\PYZsh{} Ausgabe der Transformationsmatrix, unten rechts muss eien 1 stehen!}
-        \PY{n+nb}{print}\PY{p}{(}\PY{n}{transform\PYZus{}mat}\PY{p}{)}
-\end{Verbatim}
-
-
-    \begin{Verbatim}[commandchars=\\\{\}]
-[[ 8.09122676e-01  6.54378874e-01  3.78859124e-02 -8.36721483e-16]
- [-4.95206017e-01  6.76962758e-01  1.67655368e-01 -2.83249757e-16]
- [ 7.66805286e-02 -6.51322905e-02  9.52042141e-01  2.32288175e-16]
- [ 1.23158522e+00  7.74757773e-01 -4.53695490e-01  1.00000000e+00]]
-
-    \end{Verbatim}
-
-    \begin{Verbatim}[commandchars=\\\{\}]
-{\color{incolor}In [{\color{incolor}8}]:} \PY{c+c1}{\PYZsh{} Umkehrrechnung zur Kontrolle, also Punkte der 2en Kamera mal Transformationsmatrix (dot prduct)}
-        \PY{n}{results} \PY{o}{=} \PY{n}{dst\PYZus{}points}\PY{o}{.}\PY{n}{dot}\PY{p}{(}\PY{n}{transform\PYZus{}mat}\PY{p}{)}
-\end{Verbatim}
-
-
-    \begin{Verbatim}[commandchars=\\\{\}]
-{\color{incolor}In [{\color{incolor}9}]:} \PY{c+c1}{\PYZsh{} Ergebnisse plotten zur Kontrolle}
-        \PY{n}{fig} \PY{o}{=} \PY{n}{plt}\PY{o}{.}\PY{n}{figure}\PY{p}{(}\PY{n}{figsize}\PY{o}{=}\PY{p}{(}\PY{l+m+mi}{16}\PY{p}{,}\PY{l+m+mi}{12}\PY{p}{)}\PY{p}{)}
-        \PY{n}{ax} \PY{o}{=} \PY{n}{Axes3D}\PY{p}{(}\PY{n}{fig}\PY{p}{)}
-        \PY{n}{ax}\PY{o}{.}\PY{n}{axes}\PY{o}{.}\PY{n}{set\PYZus{}zlim3d}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,} \PY{l+m+mi}{2}\PY{p}{)}
-        \PY{n}{ax}\PY{o}{.}\PY{n}{axes}\PY{o}{.}\PY{n}{set\PYZus{}xlim3d}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,} \PY{l+m+mi}{2}\PY{p}{)}
-        \PY{n}{ax}\PY{o}{.}\PY{n}{axes}\PY{o}{.}\PY{n}{set\PYZus{}ylim3d}\PY{p}{(}\PY{o}{\PYZhy{}}\PY{l+m+mi}{1}\PY{p}{,} \PY{l+m+mi}{2}\PY{p}{)}
-        \PY{n}{ax}\PY{o}{.}\PY{n}{scatter3D}\PY{p}{(}\PY{n}{xs}\PY{o}{=}\PY{n}{data\PYZus{}cam1}\PY{o}{.}\PY{n}{x}\PY{p}{,}\PY{n}{ys}\PY{o}{=}\PY{n}{data\PYZus{}cam1}\PY{o}{.}\PY{n}{z}\PY{p}{,}\PY{n}{zs}\PY{o}{=}\PY{n}{data\PYZus{}cam1}\PY{o}{.}\PY{n}{y}\PY{p}{,} \PY{n}{c}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{red}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{s}\PY{o}{=}\PY{l+m+mi}{50}\PY{p}{)}
-        \PY{n}{ax}\PY{o}{.}\PY{n}{scatter3D}\PY{p}{(}\PY{n}{xs}\PY{o}{=}\PY{n}{results}\PY{p}{[}\PY{p}{:}\PY{p}{,}\PY{l+m+mi}{0}\PY{p}{]}\PY{p}{,}\PY{n}{ys}\PY{o}{=}\PY{n}{results}\PY{p}{[}\PY{p}{:}\PY{p}{,}\PY{l+m+mi}{1}\PY{p}{]}\PY{p}{,}\PY{n}{zs}\PY{o}{=}\PY{n}{results}\PY{p}{[}\PY{p}{:}\PY{p}{,}\PY{l+m+mi}{2}\PY{p}{]}\PY{p}{,} \PY{n}{c}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{blue}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{s}\PY{o}{=}\PY{l+m+mi}{50}\PY{p}{)}
-\end{Verbatim}
-
-
-\begin{Verbatim}[commandchars=\\\{\}]
-{\color{outcolor}Out[{\color{outcolor}9}]:} <mpl\_toolkits.mplot3d.art3d.Path3DCollection at 0x23b6ee30320>
-\end{Verbatim}
-            
-    \begin{center}
-    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_8_1.png}
-    \end{center}
-    { \hspace*{\fill} \\}
-    
-    \begin{Verbatim}[commandchars=\\\{\}]
-{\color{incolor}In [{\color{incolor}10}]:} \PY{c+c1}{\PYZsh{} Ergebnisse plotten zur Kontrolle}
-         \PY{n}{fig} \PY{o}{=} \PY{n}{plt}\PY{o}{.}\PY{n}{figure}\PY{p}{(}\PY{n}{figsize}\PY{o}{=}\PY{p}{(}\PY{l+m+mi}{12}\PY{p}{,}\PY{l+m+mi}{8}\PY{p}{)}\PY{p}{)}
-         \PY{n}{plt}\PY{o}{.}\PY{n}{scatter}\PY{p}{(}\PY{n}{x}\PY{o}{=}\PY{n}{data\PYZus{}cam1}\PY{o}{.}\PY{n}{x}\PY{p}{,}\PY{n}{y}\PY{o}{=}\PY{n}{data\PYZus{}cam1}\PY{o}{.}\PY{n}{y}\PY{p}{,} \PY{n}{c}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{red}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{s}\PY{o}{=}\PY{l+m+mi}{50}\PY{p}{)}
-         \PY{n}{plt}\PY{o}{.}\PY{n}{scatter}\PY{p}{(}\PY{n}{x}\PY{o}{=}\PY{n}{results}\PY{p}{[}\PY{p}{:}\PY{p}{,}\PY{l+m+mi}{0}\PY{p}{]}\PY{p}{,}\PY{n}{y}\PY{o}{=}\PY{n}{results}\PY{p}{[}\PY{p}{:}\PY{p}{,}\PY{l+m+mi}{2}\PY{p}{]}\PY{p}{,} \PY{n}{c}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{blue}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{s}\PY{o}{=}\PY{l+m+mi}{50}\PY{p}{)}
-         \PY{n}{plt}\PY{o}{.}\PY{n}{xlim}\PY{p}{(}\PY{o}{\PYZhy{}}\PY{l+m+mi}{1}\PY{p}{,}\PY{l+m+mi}{1}\PY{p}{)}
-         \PY{n}{plt}\PY{o}{.}\PY{n}{ylim}\PY{p}{(}\PY{o}{\PYZhy{}}\PY{l+m+mi}{1}\PY{p}{,}\PY{l+m+mf}{1.2}\PY{p}{)}
-\end{Verbatim}
-
-
-\begin{Verbatim}[commandchars=\\\{\}]
-{\color{outcolor}Out[{\color{outcolor}10}]:} (-1, 1.2)
-\end{Verbatim}
-            
-    \begin{center}
-    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_9_1.png}
-    \end{center}
-    { \hspace*{\fill} \\}
-    
-    \begin{Verbatim}[commandchars=\\\{\}]
-{\color{incolor}In [{\color{incolor}11}]:} \PY{c+c1}{\PYZsh{} Ausgabe des Fehlers: Laut Funktion sind das die Summen der Residuen für jeden Spalte der Matrix}
-         \PY{c+c1}{\PYZsh{} Bin mir leider nicht ganz sicher wie das zu interpretieren ist}
-         \PY{n}{res}
-\end{Verbatim}
-
-
-\begin{Verbatim}[commandchars=\\\{\}]
-{\color{outcolor}Out[{\color{outcolor}11}]:} array([7.17875718e-03, 3.07006566e-03, 6.07860331e-03, 1.55089209e-31])
-\end{Verbatim}
-            
-    \begin{Verbatim}[commandchars=\\\{\}]
-{\color{incolor}In [{\color{incolor}12}]:} \PY{c+c1}{\PYZsh{} Neue Daten zum Test für den gehobenen Arm}
-         \PY{n}{newdata\PYZus{}cam2} \PY{o}{=} \PY{n}{pd}\PY{o}{.}\PY{n}{read\PYZus{}csv}\PY{p}{(}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Kinect\PYZus{}1807\PYZus{}2\PYZus{}weit\PYZus{}test2\PYZus{}HO.csv}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
-         \PY{n}{newdata\PYZus{}cam1} \PY{o}{=} \PY{n}{pd}\PY{o}{.}\PY{n}{read\PYZus{}csv}\PY{p}{(}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Kinect\PYZus{}1807\PYZus{}1\PYZus{}weit\PYZus{}test2\PYZus{}HO.csv}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
-         
-         \PY{c+c1}{\PYZsh{} Gleiches Spiel wie oben: extrahieren als Matrix und 1 adden}
-         \PY{n}{new\PYZus{}points2} \PY{o}{=} \PY{n}{newdata\PYZus{}cam2}\PY{o}{.}\PY{n}{as\PYZus{}matrix}\PY{p}{(}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{x}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{z}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{y}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}\PY{p}{)}
-         \PY{n}{new\PYZus{}points1} \PY{o}{=} \PY{n}{newdata\PYZus{}cam1}\PY{o}{.}\PY{n}{as\PYZus{}matrix}\PY{p}{(}\PY{p}{(}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{x}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{z}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{y}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}\PY{p}{)}
-         \PY{n}{aux} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{ones}\PY{p}{(}\PY{p}{(}\PY{l+m+mi}{25}\PY{p}{,} \PY{l+m+mi}{1}\PY{p}{)}\PY{p}{)}
-         \PY{n}{new\PYZus{}points2} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{hstack}\PY{p}{(}\PY{p}{(}\PY{n}{new\PYZus{}points2}\PY{p}{,} \PY{n}{aux}\PY{p}{)}\PY{p}{)}
-         \PY{n}{new\PYZus{}points1} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{hstack}\PY{p}{(}\PY{p}{(}\PY{n}{new\PYZus{}points1}\PY{p}{,} \PY{n}{aux}\PY{p}{)}\PY{p}{)}
-\end{Verbatim}
-
-
-    \begin{Verbatim}[commandchars=\\\{\}]
-{\color{incolor}In [{\color{incolor}13}]:} \PY{c+c1}{\PYZsh{} Anwendung der transformationsmatrix auf die neuen Punkte von Kamera 2}
-         \PY{n}{results\PYZus{}new} \PY{o}{=} \PY{n}{new\PYZus{}points2}\PY{o}{.}\PY{n}{dot}\PY{p}{(}\PY{n}{transform\PYZus{}mat}\PY{p}{)}
-\end{Verbatim}
-
-
-    \begin{Verbatim}[commandchars=\\\{\}]
-{\color{incolor}In [{\color{incolor}14}]:} \PY{c+c1}{\PYZsh{} Plotten des Results gegen die Punkte von Kamera 1}
-         \PY{n}{fig} \PY{o}{=} \PY{n}{plt}\PY{o}{.}\PY{n}{figure}\PY{p}{(}\PY{n}{figsize}\PY{o}{=}\PY{p}{(}\PY{l+m+mi}{16}\PY{p}{,}\PY{l+m+mi}{12}\PY{p}{)}\PY{p}{)}
-         \PY{n}{ax} \PY{o}{=} \PY{n}{Axes3D}\PY{p}{(}\PY{n}{fig}\PY{p}{)}
-         \PY{n}{ax}\PY{o}{.}\PY{n}{axes}\PY{o}{.}\PY{n}{set\PYZus{}zlim3d}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,} \PY{l+m+mi}{2}\PY{p}{)}
-         \PY{n}{ax}\PY{o}{.}\PY{n}{axes}\PY{o}{.}\PY{n}{set\PYZus{}xlim3d}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,} \PY{l+m+mi}{2}\PY{p}{)}
-         \PY{n}{ax}\PY{o}{.}\PY{n}{axes}\PY{o}{.}\PY{n}{set\PYZus{}ylim3d}\PY{p}{(}\PY{o}{\PYZhy{}}\PY{l+m+mi}{1}\PY{p}{,} \PY{l+m+mi}{2}\PY{p}{)}
-         \PY{n}{ax}\PY{o}{.}\PY{n}{scatter3D}\PY{p}{(}\PY{n}{xs}\PY{o}{=}\PY{n}{newdata\PYZus{}cam1}\PY{o}{.}\PY{n}{x}\PY{p}{,}\PY{n}{ys}\PY{o}{=}\PY{n}{newdata\PYZus{}cam1}\PY{o}{.}\PY{n}{z}\PY{p}{,}\PY{n}{zs}\PY{o}{=}\PY{n}{newdata\PYZus{}cam1}\PY{o}{.}\PY{n}{y}\PY{p}{,} \PY{n}{c}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{red}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{s}\PY{o}{=}\PY{l+m+mi}{50}\PY{p}{)}
-         \PY{n}{ax}\PY{o}{.}\PY{n}{scatter3D}\PY{p}{(}\PY{n}{xs}\PY{o}{=}\PY{n}{results\PYZus{}new}\PY{p}{[}\PY{p}{:}\PY{p}{,}\PY{l+m+mi}{0}\PY{p}{]}\PY{p}{,}\PY{n}{ys}\PY{o}{=}\PY{n}{results\PYZus{}new}\PY{p}{[}\PY{p}{:}\PY{p}{,}\PY{l+m+mi}{1}\PY{p}{]}\PY{p}{,}\PY{n}{zs}\PY{o}{=}\PY{n}{results\PYZus{}new}\PY{p}{[}\PY{p}{:}\PY{p}{,}\PY{l+m+mi}{2}\PY{p}{]}\PY{p}{,} \PY{n}{c}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{blue}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{s}\PY{o}{=}\PY{l+m+mi}{50}\PY{p}{)}
-\end{Verbatim}
-
-
-\begin{Verbatim}[commandchars=\\\{\}]
-{\color{outcolor}Out[{\color{outcolor}14}]:} <mpl\_toolkits.mplot3d.art3d.Path3DCollection at 0x23b6eefb940>
-\end{Verbatim}
-            
-    \begin{center}
-    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_13_1.png}
-    \end{center}
-    { \hspace*{\fill} \\}
-    
-    \begin{Verbatim}[commandchars=\\\{\}]
-{\color{incolor}In [{\color{incolor}15}]:} \PY{c+c1}{\PYZsh{} 2d}
-         \PY{n}{fig} \PY{o}{=} \PY{n}{plt}\PY{o}{.}\PY{n}{figure}\PY{p}{(}\PY{n}{figsize}\PY{o}{=}\PY{p}{(}\PY{l+m+mi}{12}\PY{p}{,}\PY{l+m+mi}{8}\PY{p}{)}\PY{p}{)}
-         \PY{n}{plt}\PY{o}{.}\PY{n}{scatter}\PY{p}{(}\PY{n}{x}\PY{o}{=}\PY{n}{newdata\PYZus{}cam1}\PY{o}{.}\PY{n}{x}\PY{p}{,}\PY{n}{y}\PY{o}{=}\PY{n}{newdata\PYZus{}cam1}\PY{o}{.}\PY{n}{y}\PY{p}{,} \PY{n}{c}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{red}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{s}\PY{o}{=}\PY{l+m+mi}{50}\PY{p}{)}
-         \PY{n}{plt}\PY{o}{.}\PY{n}{scatter}\PY{p}{(}\PY{n}{x}\PY{o}{=}\PY{n}{results\PYZus{}new}\PY{p}{[}\PY{p}{:}\PY{p}{,}\PY{l+m+mi}{0}\PY{p}{]}\PY{p}{,}\PY{n}{y}\PY{o}{=}\PY{n}{results\PYZus{}new}\PY{p}{[}\PY{p}{:}\PY{p}{,}\PY{l+m+mi}{2}\PY{p}{]}\PY{p}{,} \PY{n}{c}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{blue}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{s}\PY{o}{=}\PY{l+m+mi}{50}\PY{p}{)}
-         \PY{n}{plt}\PY{o}{.}\PY{n}{xlim}\PY{p}{(}\PY{o}{\PYZhy{}}\PY{l+m+mi}{1}\PY{p}{,}\PY{l+m+mi}{1}\PY{p}{)}
-         \PY{n}{plt}\PY{o}{.}\PY{n}{ylim}\PY{p}{(}\PY{o}{\PYZhy{}}\PY{l+m+mi}{1}\PY{p}{,}\PY{l+m+mf}{1.2}\PY{p}{)}
-\end{Verbatim}
-
-
-\begin{Verbatim}[commandchars=\\\{\}]
-{\color{outcolor}Out[{\color{outcolor}15}]:} (-1, 1.2)
-\end{Verbatim}
-            
-    \begin{center}
-    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_14_1.png}
-    \end{center}
-    { \hspace*{\fill} \\}
-    
 
     % Add a bibliography block to the postdoc
     
