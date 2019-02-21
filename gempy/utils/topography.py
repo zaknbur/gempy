@@ -34,47 +34,52 @@ import skimage
 class DEM():
     '''Class to include height elevation data (e.g. DEMs) with the geological model '''
 
-    def __init__(self, path_dem, geodata=None, interpdata=None, output_path=None):
+    def __init__(self, path_dem=None, xyzarray=None, geodata=None, interpdata=None, output_path=None):
         '''
         Args:
             path_dem: path where dem is stored. file format: GDAL raster formats
             geodata: geo_data object
             output_path: path to a folder. Must be defined for gdal to perform modifications on the raster
         '''
-        if path_dem:
-            self.dem = gdal.Open(path_dem)
-        else:
-            print('Define path to raster file')
-
-        self.dem_zval = self.dem.ReadAsArray()
-        self.raster_extent, self.raster_resolution = self._get_raster_dimensions()
-
         if geodata:
             self.geo_data = geodata
+
+        if path_dem is not None:
+            self.dem = gdal.Open(path_dem)
+
+
+            self.dem_zval = self.dem.ReadAsArray()
+            self.raster_extent, self.raster_resolution = self._get_raster_dimensions()
+
+
             self.extent_match = self.compare_extent()
 
-        if self.extent_match == False:  # crop dem and update values
-            if output_path:
-                self.dem = self.cropDEM2geodata(output_path)
-                self.dem_zval = self.dem.ReadAsArray()
-                self.raster_extent, self.raster_resolution = self._get_raster_dimensions()
-                self.extent_match = self.compare_extent()
+            if self.extent_match == False:  # crop dem and update values
+                if output_path:
+                    self.dem = self.cropDEM2geodata(output_path)
+                    self.dem_zval = self.dem.ReadAsArray()
+                    self.raster_extent, self.raster_resolution = self._get_raster_dimensions()
+                    self.extent_match = self.compare_extent()
+                else:
+                    print('extents of DEM and geodata do not match. To see a comparison, use self.show(compare=True). '
+                          'For automatic cropping, define an output path')
+
+            self.grid_info = self._get_grid_info()  # daraus tabelle machen für übersicht
+            self.dem_resized = skimage.transform.resize(self.dem_zval,
+                                                        (self.geo_data.resolution[0], self.geo_data.resolution[1]),
+                                                        preserve_range=True)
+
+            if output_path:  # create file only when extents match
+                self.surface_coordinates = self.convertDEM2xyz(output_path)
+                #self.surface_coords_resized = self.convertDEM2xyz()
             else:
-                print('extents of DEM and geodata do not match. To see a comparison, use self.show(compare=True). '
-                      'For automatic cropping, define an output path')
+                print('for the full spectrum of plotting with topography, please define an output path')
+            if interpdata:
+                self.interp_data = interpdata
 
-        self.grid_info = self._get_grid_info()  # daraus tabelle machen für übersicht
-        self.dem_resized = skimage.transform.resize(self.dem_zval,
-                                                    (self.geo_data.resolution[0], self.geo_data.resolution[1]),
-                                                    preserve_range=True)
-
-        if output_path:  # create file only when extents match
-            self.surface_coordinates = self.convertDEM2xyz(output_path)
-            #self.surface_coords_resized = self.convertDEM2xyz()
         else:
-            print('for the full spectrum of plotting with topography, please define an output path')
-        if interpdata:
-            self.interp_data = interpdata
+            self.xyz_box_resized = xyzarray
+            print('Define path to raster file')
 
     def compare_extent(self):
         '''
@@ -194,7 +199,7 @@ class DEM():
             cell_number:
         Returns:
         '''
-        print(self.xyz_box_resized.shape, self.surface_coordinates[1].shape)
+        #print(self.xyz_box_resized.shape, self.surface_coordinates[1].shape)
         surface_dem = self.xyz_box_resized
         x = surface_dem[:, :, 0]
         y = surface_dem[:, :, 1]
