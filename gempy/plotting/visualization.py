@@ -300,11 +300,25 @@ class PlotData2D(object):
         _a, _b, _c, extent_val, x, y = self._slice(direction, cell_number)[:-2]
         # TODO: plot_topo option - need fault_block for that
         if scalar_field_at_interfaces is not None:
+            try:
+                self._color_lot = dict(
+                    zip(self._data.formations['formation_number'], list(self._data.formations['color'])))
+                _cmap = matplotlib.colors.ListedColormap(list(self._data.formations['color'])[self._data.n_faults:][::-1])
+                _norm = matplotlib.colors.Normalize(vmin=1, vmax=len(self._cmap.colors))
+
+            except KeyError:
+                raise KeyError('You need to pass the colors to formations to use this functionality. see set colors')
+
             sfai = scalar_field_at_interfaces[self._data.n_faults:].sum(axis=0)
             no_idx = np.nonzero(sfai)[0]
             sfai.sort()
-            im = plt.contourf(plot_block[_a, _b, _c].T, levels=sfai[no_idx], extend='both',
-                         extent=extent_val, **kwargs)
+
+            max_ = plot_block[_a, _b, _c].T.max()
+            min_ = plot_block[_a, _b, _c].T.min()
+            limits = np.insert(sfai[no_idx], 0, min_)
+            limits = np.insert(limits, limits.shape[0], max_)
+            im = plt.contourf(plot_block[_a, _b, _c].T, levels=limits, vmin=min_, vmax=max_,
+                              extent=extent_val, cmap=_cmap, norm=_norm)
 
         else:
             im = plt.imshow(plot_block[_a, _b, _c].T, origin="bottom",

@@ -1809,7 +1809,7 @@ class TheanoGraph(object):
         self.fault_block_init = T.zeros((5, self.grid_val_T.shape[0]))
         self.fault_block_init.name = 'final block of faults init'
         # Compute Faults
-        if self.n_faults.get_value()  != 0 or self.is_fault:
+        if self.n_faults.get_value() != 0 or self.is_fault:
 
             # Looping
             fault_loop, updates3 = theano.scan(
