@@ -43,6 +43,7 @@ except ImportError:
 class vMF():
 
     def __init__(self, name = None, mean=None, kappa=None):
+        # TODO: Add log likelihood to vMF
         """
         Class to generate and/or load orientation data (azimuth and dip or pole vectors) based on the von-Mises-Fisher
         distribution. Contains methods for visualization and parameter estimation.
@@ -51,7 +52,7 @@ class vMF():
             kappa:
         """
 
-        if kappa:
+        if kappa is not None:
             self.kappa = kappa
 
         if mean is not None:
@@ -59,7 +60,6 @@ class vMF():
             #self.mean = self._spherical2cartesian(mean)
             #else:
             self.mean = mean
-
 
         self.name = name
 
@@ -69,15 +69,16 @@ class vMF():
             info_string += "Formation:{0!r}\n".format(self.name)
 
         #if self.samples_xyz is not None:
-        info_string += "n = %.d\n" % len(self.samples_xyz)
+        try:
+            info_string += "n = %.d\n" % len(self.samples_xyz)
+        except AttributeError:
+            print('I, Elisa Heim, promise to fix this method.')
         if self.mean is not None:
             mean = self._cartesian2spherical(self.mean)
             info_string += "Mean orientation = (%.d, %.d)\n" % (mean[0],mean[1])
         #if self.kappa:
         info_string += "Kappa = %.d\n" % self.kappa
         return info_string
-
-
 
     def sample(self, mean=None, kappa=None, num_samples=100, direct_output = False):
         """
@@ -92,7 +93,7 @@ class vMF():
         Returns: self.samples_xyz, self.samples_sph
 
         """
-        if mean is not None:
+        if mean is None:
             if kappa is not None:
                 self.mean = mean
                 self.kappa = kappa
@@ -113,7 +114,6 @@ class vMF():
 
         except AttributeError:
             print('mean and kappa must be defined')
-
 
     def add_orientation_data(self, orient):
         """
@@ -231,6 +231,9 @@ class vMF():
         """
         if samples is None:
             samples = self.samples_azdip
+        else:
+            if samples.ndim == 3:
+                samples = self._cartesian2spherical(samples)
         fig, ax = mplstereonet.subplots(figsize=(5, 5))
         if poles is True:
             try:
@@ -251,7 +254,6 @@ class vMF():
         #return fig
 
     #def info(self):
-
 
     def _generate_samples(self):
 
@@ -290,7 +292,7 @@ class vMF():
         """
         Sample point on sphere orthogonal to mu.
         """
-        v = np.random.randn(self.mean.shape[0])
+        v = np.random.randn(len(self.mean))
         proj_mu_v = self.mean * np.dot(self.mean, v) / np.linalg.norm(self.mean)
         orthto = v - proj_mu_v
         return orthto / np.linalg.norm(orthto)
