@@ -153,16 +153,13 @@ class PlotData2D(object):
         # Change dictionary keys numbers for formation names
         for i in zip(self.formation_names, self.formation_numbers):
             self._color_lot[i[0]] = self._color_lot[i[1]]
-        #print(self._color_lot)
 
         #fig, ax = plt.subplots()
 
         series_to_plot_i['formation'] = series_to_plot_i['formation'].cat.remove_unused_categories()
         series_to_plot_f['formation'] = series_to_plot_f['formation'].cat.remove_unused_categories()
-        #print(series_to_plot_i)
 
         if data_type == 'all':
-            #print(self._color_lot)
             p = sns.lmplot(x, y,
                            data=series_to_plot_i,
                            fit_reg=False,
@@ -246,8 +243,8 @@ class PlotData2D(object):
             raise AttributeError(str(direction) + "must be a cartesian direction, i.e. xyz")
         return _a, _b, _c, extent_val, x, y, Gx, Gy
 
-    def plot_block_section(self, cell_number=13, block=None, direction="y", interpolation='none',
-                           plot_data=False, topography = None, ve=1, **kwargs):
+    def plot_block_section(self, cell_number=13, block=None, direction="y", scalar_field_at_interfaces=None,
+                           interpolation='none', plot_data=False, topography = None, ve=1, **kwargs):
         """
         Plot a section of the block model
 
@@ -265,28 +262,25 @@ class PlotData2D(object):
         Returns:
             Block plot
         """
-        if block is not None:
-            import theano
-            import numpy
-            assert (type(block) is theano.tensor.sharedvar.TensorSharedVariable or
-                    type(block) is numpy.ndarray), \
-                'Block has to be a theano shared object or numpy array.'
-            if type(block) is numpy.ndarray:
-                _block = block
-            else:
-                _block = block.get_value()
-        else:
-            try:
-                _block = self._data.interpolator.tg.final_block.get_value()
-            except AttributeError:
-                raise AttributeError('There is no block to plot')
 
-        plot_block = _block.reshape(self._data.resolution[0], self._data.resolution[1], self._data.resolution[2])
-        _a, _b, _c, extent_val, x, y = self._slice(direction, cell_number)[:-2]
+        #if block is not None:
+        #     import theano
+        #     import numpy
+        #     assert (type(block) is theano.tensor.sharedvar.TensorSharedVariable or
+        #             type(block) is numpy.ndarray), \
+        #         'Block has to be a theano shared object or numpy array.'
+        #     if type(block) is numpy.ndarray:
+        #         _block = block
+        #     else:
+        #         _block = block.get_value()
+        # else:
+        #     try:
+        #         _block = self._data.interpolator.tg.final_block.get_value()
+        #     except AttributeError:
+        #         raise AttributeError('There is no block to plot')
 
-        if plot_data:
-            self.plot_data(direction, 'all')
-        # TODO: plot_topo option - need fault_block for that
+
+        _block = block
 
         # apply vertical exaggeration
         if direction == 'x' or direction == 'y':
@@ -299,17 +293,45 @@ class PlotData2D(object):
         if 'norm' not in kwargs:
             kwargs['norm'] = self._norm
 
-        im = plt.imshow(plot_block[_a, _b, _c].T, origin="bottom",
-                        extent=extent_val,
-                        interpolation=interpolation,
-                        aspect=aspect,
-                        **kwargs)
+        if plot_data:
+            self.plot_data(direction, 'all')
+
+        plot_block = _block.reshape(self._data.resolution[0], self._data.resolution[1], self._data.resolution[2])
+        _a, _b, _c, extent_val, x, y = self._slice(direction, cell_number)[:-2]
+        # TODO: plot_topo option - need fault_block for that
+        if scalar_field_at_interfaces is not None:
+            try:
+                self._color_lot = dict(
+                    zip(self._data.formations['formation_number'], list(self._data.formations['color'])))
+                _cmap = matplotlib.colors.ListedColormap(list(self._data.formations['color'])[self._data.n_faults:][::-1])
+                _norm = matplotlib.colors.Normalize(vmin=1, vmax=len(self._cmap.colors))
+
+            except KeyError:
+                raise KeyError('You need to pass the colors to formations to use this functionality. see set colors')
+
+            sfai = scalar_field_at_interfaces[self._data.n_faults:].sum(axis=0)
+            no_idx = np.nonzero(sfai)[0]
+            sfai.sort()
+
+            max_ = plot_block[_a, _b, _c].T.max()
+            min_ = plot_block[_a, _b, _c].T.min()
+            limits = np.insert(sfai[no_idx], 0, min_)
+            limits = np.insert(limits, limits.shape[0], max_)
+            im = plt.contourf(plot_block[_a, _b, _c].T, levels=limits, vmin=min_, vmax=max_,
+                              extent=extent_val, cmap=_cmap, norm=_norm)
+
+        else:
+            im = plt.imshow(plot_block[_a, _b, _c].T, origin="bottom",
+                            extent=extent_val,
+                            interpolation=interpolation,
+                            aspect=aspect,
+                            **kwargs)
+
         if direction == 'x' or direction == 'y':
             if topography:
                  # TODO: apply vertical exaggeration to topography
                 topoline = topography._slice(direction = direction, extent = extent_val, cell_number = cell_number)
                 plt.fill(topoline[:, 0], topoline[:, 1], color='k')
-
 
         import matplotlib.patches as mpatches
         colors = [im.cmap(im.norm(value)) for value in self.formation_numbers]
@@ -526,7 +548,7 @@ class PlotData2D(object):
             plt.plot(np.array([centroids[a][c1], centroids[b][c1]]) * e1 / r1 + d1,
                           np.array([centroids[a][c2], centroids[b][c2]]) * e2 / r2 + d2, "black", linewidth=0.75)
 
-            for node in G.nodes_iter():
+            for node in G.nodes():
                 plt.plot(centroids[node][c1] * e1 / r1 + d1, centroids[node][c2] * e2 / r2 +d2,
                          marker="o", color="black", markersize=10, alpha=0.75)
                 plt.text(centroids[node][c1] * e1 / r1 + d1,
