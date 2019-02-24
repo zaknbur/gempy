@@ -215,7 +215,7 @@ class DEM():
             upleft = np.array([extent[0], extent[3]])
             rightcorn = np.array([extent[1], c[-1]])
             upright = np.array([extent[1], extent[3]])
-            print(rightcorn, upright, upleft, leftcorn)
+            #print(rightcorn, upright, upleft, leftcorn)
             topolinebox = np.append(topoline, (rightcorn, upright, upleft, leftcorn), axis=0)
 
         elif direction == 'x':
@@ -224,10 +224,11 @@ class DEM():
             c = z[:, cell_number]
             assert len(np.unique(a)) == 1
             topoline = np.dstack((b, c)).reshape(-1, 2).astype(int)
-            leftcorn = np.array([extent[2],c[0]])
+            leftcorn = np.array([extent[0],c[0]])
             upleft = np.array([extent[0], extent[3]])
-            rightcorn = np.array([extent[3], c[-1]])
+            rightcorn = np.array([extent[1], c[-1]])
             upright = np.array([extent[1], extent[3]])
+            #print(rightcorn, upright, upleft, leftcorn)
             topolinebox = np.append(topoline, (rightcorn, upright, upleft, leftcorn), axis=0)
 
         elif direction == "z":
