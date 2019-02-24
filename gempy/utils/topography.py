@@ -204,16 +204,19 @@ class DEM():
         x = surface_dem[:, :, 0]
         y = surface_dem[:, :, 1]
         z = surface_dem[:, :, 2]
-        print(x.shape)
+        #print(x.shape)
         if direction == 'y':
             a = x[cell_number, :]
             b = y[cell_number, :]
             c = z[cell_number, :]
             assert len(np.unique(b)) == 1
             topoline = np.dstack((a, c)).reshape(-1, 2).astype(int)
+            leftcorn = np.array([extent[0],c[0]])
             upleft = np.array([extent[0], extent[3]])
+            rightcorn = np.array([extent[1], c[-1]])
             upright = np.array([extent[1], extent[3]])
-            topolinebox = np.append(topoline, (upright, upleft), axis=0)
+            print(rightcorn, upright, upleft, leftcorn)
+            topolinebox = np.append(topoline, (rightcorn, upright, upleft, leftcorn), axis=0)
 
         elif direction == 'x':
             a = x[:, cell_number]
@@ -221,9 +224,11 @@ class DEM():
             c = z[:, cell_number]
             assert len(np.unique(a)) == 1
             topoline = np.dstack((b, c)).reshape(-1, 2).astype(int)
+            leftcorn = np.array([extent[2],c[0]])
             upleft = np.array([extent[0], extent[3]])
+            rightcorn = np.array([extent[3], c[-1]])
             upright = np.array([extent[1], extent[3]])
-            topolinebox = np.append(topoline, (upright, upleft), axis=0)
+            topolinebox = np.append(topoline, (rightcorn, upright, upleft, leftcorn), axis=0)
 
         elif direction == "z":
             print('not implemented')
