@@ -72,6 +72,7 @@ class vMF():
         try:
             info_string += "n = %.d\n" % len(self.samples_xyz)
         except AttributeError:
+            #pass
             print('I, Elisa Heim, promise to fix this method.')
         if self.mean is not None:
             mean = self._cartesian2spherical(self.mean)
