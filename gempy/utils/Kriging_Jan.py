@@ -231,16 +231,16 @@ class Kriging(object):
             dist_matrix: Matrix containing distances from each discrete grid point to each other grid point,
                             ordered as defined by SGS path.
         '''
-        tstep1 = 0
-        tstep2 = 0
-        tstep3 = 0
-        tstep4 = 0
+        self.tstep1 = 0
+        self.tstep2 = 0
+        self.tstep3 = 0
+        self.tstep4 = 0
 
         t_prestep1 = time.time()
         # 1: Calculate reference plane within domain between top and bottom border (based on scalar field value)
         med_ver, med_sim, grad_plane, aux_vert1, aux_vert2 = self.create_central_plane()
         t_poststep1 = time.time()
-        print("Step1", t_poststep1-t_prestep1)
+        self.tstep1 =  t_poststep1-t_prestep1
 
         # 1.5 Qick plotting option of refernece plane for crosscheck
         # fig = plt.figure(figsize=(16,10))
@@ -251,17 +251,17 @@ class Kriging(object):
         #    Definition of perpendicular distance portion either by method A or method B
         ref, perp = self.projection_of_each_point(med_ver, grad_plane, grid_reordered, aux_vert1, aux_vert2)
         t_poststep2 = time.time()
-        print("Step2", t_poststep1 - t_poststep2)
+        self.tstep2 = t_poststep2 - t_poststep1
 
         # 3: Calculate all distances between vertices on reference plane by heat method
         dist_clean = self.proj_surface_dist_each_to_each(med_ver, med_sim)
         t_poststep3 = time.time()
-        print("Step3", t_poststep2 - t_poststep3)
+        self.tstep3 = t_poststep3 - t_poststep2
 
         # 4: Combine results to final distance matrix, applying anisotropy factor if desired
         dist_matrix = self.distances_grid(ref, perp, dist_clean, grid_reordered)
         t_poststep4 = time.time()
-        print("Step4", t_poststep3 - t_poststep4)
+        self.tstep4 = t_poststep4 - t_poststep3
 
         return dist_matrix
 
@@ -509,7 +509,7 @@ class Kriging(object):
         '''
 
         #just for my case
-        self.inp_mean=20
+        self.inp_mean=0
 
         # empty matrix building
         shape = len(a)
@@ -528,12 +528,13 @@ class Kriging(object):
         w = np.linalg.solve(C, c)
 
         # SGS version - taking result from normal distribution defined by kriging mean an standard deviation
-        result = np.random.normal(self.inp_mean + np.sum(w * (prop-self.inp_mean)), scale = np.sqrt(self.sill-np.sum(w*c)))
+        std_sk = np.sqrt(self.sill-np.sum(w*c))
+        result = np.random.normal(self.inp_mean + np.sum(w * (prop-self.inp_mean)), scale = std_sk)
 
         # direct version, calculating result from weights. Need to be normed to one
         # result = np.random.normal(self.inp_mean + np.sum(w * (prop - self.inp_mean))
 
-        return result
+        return result, std_sk
 
     def ordinary_kriging(self, a, b, prop, target):
         '''
@@ -592,13 +593,13 @@ class Kriging(object):
             # self.control_coord = np.vstack((self.control_coord, target[:3]))
 
         # result = np.random.normal(np.sum(w_cor  * prop), scale=np.sqrt(pred_var)) # code for corrected weights
-
-        result = np.random.normal(np.sum(w[:shape] * prop), scale=np.sqrt(pred_var))
+        std_ok = np.sqrt(pred_var)
+        result = np.random.normal(np.sum(w[:shape] * prop), scale=std_ok)
 
         # direct version, calculating result from weights.
         # result = np.sum(w_cor * prop)
 
-        return result
+        return result, std_ok
 
     def universal_kriging(self, a, b, prop, coord, target_coord):
 
@@ -631,13 +632,14 @@ class Kriging(object):
         # Solve Kriging equations
         w = np.linalg.solve(C, c)
 
-        # SGS version - in UK case the scale (standard deviation) is not yet implemented/correct
-        result = np.random.normal(np.sum(w[:shape] * prop), scale=np.sqrt(np.sum(w[:shape]*c[:shape])+np.sum(w[shape:]*c[shape:])))
+        # SGS version
+        std_uk = np.sqrt(np.sum(w[:shape]*c[:shape])+np.sum(w[shape:]*c[shape:]))
+        result = np.random.normal(np.sum(w[:shape] * prop), scale= std_uk)
 
         # direct version, calculating result from weights.
         # result = np.sum(w[:shape] * prop)
 
-        return result
+        return result, std_uk
 
     def get_distance_matrices(self, dist_matrix, n, prop_data, subcoord):
         """
@@ -689,10 +691,10 @@ class Kriging(object):
         runs = len(grid_coord) - len(prop_data[0])
 
         # for timing purposes
-        time_prec = 0
-        time_sub = 0
-        time_dist = 0
-        time_krig = 0
+        self.time_prec = 0
+        self.time_sub = 0
+        self.time_dist = 0
+        self.time_krig = 0
 
         # create array to go through SGS, only containing indices of grid points without data
         sgs_check = np.arange(0, len(grid_coord))
@@ -711,6 +713,9 @@ class Kriging(object):
 
         # set initial length of property data frame
         start = len(prop_data[0])
+        print(len(self.grid_dataframe))
+        self.std = np.zeros(len(self.grid_dataframe-len(prop_data[0]))-1)
+
 
         for i in range(0, len(sgs_check)):
 
@@ -727,31 +732,32 @@ class Kriging(object):
             subcoord = coord_sgs_order[0:start + i + 1]
 
             t1 = time.time()
-            time_sub = time_sub + (t1 - t0)
+            self.time_sub = self.time_sub + (t1 - t0)
             # get closest distances
             # a, b, prop = self.get_distance_matrices(submatrix, 50, prop_data)
             # for UK version:
             a, b, close_prop, close_coord = self.get_distance_matrices(submatrix, 20, prop_data, subcoord)
 
             t2 = time.time()
-            time_dist = time_dist + (t2 - t1)
+            self.time_dist = self.time_dist + (t2 - t1)
             # perform the Kriging interpolation on this point
 
             if self.kriging_type == 'OK':
-                kriging_result = self.ordinary_kriging(a, b, close_prop, target_coord)
+                kriging_result, std_result = self.ordinary_kriging(a, b, close_prop, target_coord)
             elif self.kriging_type == 'UK':
-                kriging_result = self.universal_kriging(a, b, close_prop, close_coord, target_coord)
+                kriging_result, std_result = self.universal_kriging(a, b, close_prop, close_coord, target_coord)
             elif self.kriging_type == 'SK':
-                kriging_result = self.simple_kriging(a, b, close_prop)
+                kriging_result, std_result = self.simple_kriging(a, b, close_prop)
             else:
                 print('ERORR - Kriging Type not understood')
 
             t3 = time.time()
-            time_krig = time_krig + (t3 - t2)
+            self.time_krig = self.time_krig + (t3 - t2)
 
             # add point to property data list
             prop_data = np.hstack((prop_data, ([[target_point], [kriging_result]])))
 
+            self.std[i]=std_result
             # use of progress bar ...
             # updt(runs,i+1)
 
@@ -763,9 +769,9 @@ class Kriging(object):
         # prop_data = np.swapaxes(prop_data,0,1)
         result_coord = np.swapaxes(coord_sgs_order, 0, 1)
 
-        print("submatrix extraction:", time_sub)
-        print("distance Matrices:", time_dist)
-        print("kriging calculation:", time_krig)
+        print("submatrix extraction:", self.time_sub)
+        print("distance Matrices:", self.time_dist)
+        print("kriging calculation:", self.time_krig)
 
         print("Negative Variances:", self.neg_var_count)
         print("Out of:", len(coord_sgs_order))
