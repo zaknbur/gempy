@@ -30,11 +30,12 @@ class ReadGeoModellerXML:
 
         self.extent = self._get_extent()
         self.data = self.extract_data()
-        self.interfaces, self.orientations = self.get_dataframes()
-        self.stratigraphic_column = self.get_stratigraphic_column()
-        self.faults = self.get_faults()
-        self.series_info = self._get_series_fmt_dict()
-        self.series_distribution = self.get_series_distribution()
+
+        #self.interfaces, self.orientations = self.get_dataframes()
+        #self.stratigraphic_column = self.get_stratigraphic_column()
+        #self.faults = self.get_faults()
+        #self.series_info = self._get_series_fmt_dict()
+        #self.series_distribution = self.get_series_distribution()
 
         # self.fault_matrix = self.get_fault_matrix()
 
@@ -163,14 +164,14 @@ class ReadGeoModellerXML:
                         interf_formation.append(fmt)
                         interf_series.append(s)
 
-            gradssub = np.delete(grads, 0)
-            lengrads = gradssub.reshape(-1, 6)
+            #gradssub = np.delete(grads, 0)
+            lengrads = grads.reshape(-1, 6)
             # print(lengrads.shape)
         for k in range(lengrads.shape[0]):
             orient_series.append(s)
 
-        coords = np.delete(coords, 0)  # because first value is none
-        grads = np.delete(grads, 0)
+        #coords = np.delete(coords, 0)  # because first value is none
+        #grads = np.delete(grads, 0)
 
         interfaces = pn.DataFrame(coords.reshape(-1, 3), columns=['X', 'Y', 'Z'])
         # print(len(interfaces), len(interf_formation))
