@@ -397,7 +397,7 @@ def compute_model(model: Model, output='geology', compute_mesh=True, reset_weigh
     # TODO: Assert frame by frame that all data is like is supposed. Otherwise,
 
     assert model.additional_data.structure_data.df.loc['values', 'len surfaces surface_points'].min() > 1, \
-        'To compute the model is necessary at least 2 interface points per layer'
+        'To calculate the model, at least 2 surface points per layer are required.'
 
     if output == 'geology':
         assert model.interpolator.theano_function is not None, 'You need to compile the theano function first'
@@ -428,6 +428,9 @@ def compute_model(model: Model, output='geology', compute_mesh=True, reset_weigh
         if model.grid.active_grids[2] is np.True_:
             l0, l1 = model.grid.get_grid_args('topography')
             model.solutions.geological_map = sol[0][:, l0: l1]
+        if model.grid.active_grids[1] is np.True_:
+            l0, l1 = model.grid.get_grid_args('custom')
+            model.solutions.custom = sol[0][:, l0: l1]
         if sort_surfaces:
             model.set_surface_order_from_solution()
         return model.solutions

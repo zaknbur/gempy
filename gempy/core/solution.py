@@ -78,6 +78,7 @@ class Solution(object):
         self.edges = []
 
         self.geological_map = None
+        self.custom = None
 
     def __repr__(self):
         return '\nLithology ids \n  %s \n' \
