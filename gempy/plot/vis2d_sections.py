@@ -58,6 +58,7 @@ class PlotSolution:
         plt.imshow(geomap, origin = 'lower', extent=self.model.grid.topography.extent, cmap=self._cmap, norm=self._norm)
         if contour_lines==True and show_data==False:
             CS = ax.contour(self.model.grid.topography.values_3D[:, :, 2],  cmap='Greys', linestyles='solid',
+
                             extent=self.model.grid.topography.extent)
             ax.clabel(CS, inline=1, fontsize=10, fmt='%d')
             cbar = plt.colorbar(CS)
@@ -220,3 +221,125 @@ class PlotSolution:
             plt.ylim(self.model.grid.regular_grid.extent[2:4])
             # ax.set_aspect(np.diff(geo_model.grid.regular_grid.extent[:2])/np.diff(geo_model.grid.regular_grid.extent[2:4]))
         plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+
+    def plot_data(self, direction="y", data_type='all', series="all", legend_font_size=10, ve=1, **kwargs):
+        """
+        Plot the projecton of the raw data (surface_points and orientations) in 2D following a
+        specific directions
+
+        Args:
+            direction(str): xyz. Caartesian direction to be plotted
+            data_type (str): type of data to plot. 'all', 'surface_points' or 'orientations'
+            series(str): series to plot
+            ve(float): Vertical exageration
+            **kwargs: seaborn lmplot key arguments. (TODO: adding the link to them)
+
+        Returns:
+            Data plot
+
+        """
+        if 'scatter_kws' not in kwargs:
+            kwargs['scatter_kws'] = {"marker": "D",
+                                     "s": 100,
+                                     "edgecolors": "black",
+                                     "linewidths": 1}
+
+        x, y, Gx, Gy = self._slice(direction)[4:]
+        extent = self._slice(direction)[3]
+
+        aspect = (extent[1] - extent[0]) / (extent[3] - extent[2])
+        # apply vertical exageration
+        if direction == 'x' or direction == 'y':
+            aspect /= ve
+
+        if aspect < 1:
+            min_axis = 'width'
+        else:
+            min_axis = 'height'
+        if series == "all":
+            series_to_plot_i = self.model.surface_points.df[self.model.surface_points.df["series"].
+                isin(self.model.series.df.index.values)]
+            series_to_plot_f = self.model.orientations.df[self.model.orientations.df["series"].
+                isin(self.model.series.df.index.values)]
+
+        else:
+
+            series_to_plot_i = self.model.surface_points[self.model.surface_points.df["series"] == series]
+            series_to_plot_f = self.model.orientations[self.model.orientations.df["series"] == series]
+
+        if data_type == 'all':
+            p = sns.lmplot(x, y,
+                           data=series_to_plot_i,
+                           fit_reg=False,
+                           aspect=aspect,
+                           hue="surface",
+                           #scatter_kws=scatter_kws,
+                           legend=False,
+                           legend_out=False,
+                           palette= self._color_lot,
+                           **kwargs)
+
+            p.axes[0, 0].set_ylim(extent[2], extent[3])
+            p.axes[0, 0].set_xlim(extent[0], extent[1])
+
+            # Plotting orientations
+            plt.quiver(series_to_plot_f[x], series_to_plot_f[y],
+                       series_to_plot_f[Gx], series_to_plot_f[Gy],
+                       pivot="tail", scale_units=min_axis, scale=10)
+
+        if data_type == 'surface_points':
+            p = sns.lmplot(x, y,
+                           data=series_to_plot_i,
+                           fit_reg=False,
+                           aspect=aspect,
+                           hue="surface",
+                           #scatter_kws=scatter_kws,
+                           legend=False,
+                           legend_out=False,
+                           palette=self._color_lot,
+                           **kwargs)
+            p.axes[0, 0].set_ylim(extent[2], extent[3])
+            p.axes[0, 0].set_xlim(extent[0], extent[1])
+
+        if data_type == 'orientations':
+            plt.quiver(series_to_plot_f[x], series_to_plot_f[y],
+                       series_to_plot_f[Gx], series_to_plot_f[Gy],
+                       pivot="tail", scale_units=min_axis, scale=15)
+
+        plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+
+        plt.xlabel(x)
+        plt.ylabel(y)
+
+    def _slice(self, direction, cell_number=25):
+        """
+        Slice the 3D array (blocks or scalar field) in the specific direction selected in the plot functions
+
+        """
+        _a, _b, _c = (slice(0, self.model.grid.regular_grid.resolution[0]),
+                      slice(0, self.model.grid.regular_grid.resolution[1]),
+                      slice(0, self.model.grid.regular_grid.resolution[2]))
+        if direction == "x":
+            _a = cell_number
+            x = "Y"
+            y = "Z"
+            Gx = "G_y"
+            Gy = "G_z"
+            extent_val = self.model.grid.regular_grid.extent[[2, 3, 4, 5]]
+        elif direction == "y":
+            _b = cell_number
+            x = "X"
+            y = "Z"
+            Gx = "G_x"
+            Gy = "G_z"
+            extent_val = self.model.grid.regular_grid.extent[[0, 1, 4, 5]]
+        elif direction == "z":
+            _c = cell_number
+            x = "X"
+            y = "Y"
+            Gx = "G_x"
+            Gy = "G_y"
+            extent_val = self.model.grid.regular_grid.extent[[0, 1, 2, 3]]
+        else:
+            raise AttributeError(str(direction) + "must be a cartesian direction, i.e. xyz")
+        return _a, _b, _c, extent_val, x, y, Gx, Gy

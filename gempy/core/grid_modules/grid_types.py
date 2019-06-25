@@ -436,7 +436,7 @@ class Topography:
         xj = self.values_3D[:, :, 0][0,:]
         yj = self.values_3D[:, :, 1][:,0]
         zj = self.values_3D[:, :, 2].T
-        print(xj.shape,yj.shape,zj.shape)
+        #print(xj.shape,yj.shape,zj.shape)
         f = interpolate.RectBivariateSpline(xj, yj, zj)
         zi = f(xy[:, 0], xy[:, 1])
         return np.diag(zi)
