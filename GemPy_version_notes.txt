@@ -1,0 +1,31 @@
+Problems:
+
+- GNU Threading layer on Windows
+- Theano and numpy versions
+- Scikit image and numpy versions
+
+New environment: (11.03.2019)
+
+- install theano (1.0.3), pip ugrade to 1.0.4 (not available in conda)
+- Elisa: conda install -c conda-forge theano
+--> environment broken
+- install numpy (1.16.2)
+- install pandas (0.9.1)
+- install matplotlib (3.0.2), seems to cover vtk
+- install seaborn (0.9.0)
+- install qgrid (1.1.1)
+- install scikit learn (0.20.2)
+- install scikit iamge (1.0.2), pip upgrade to (1.0.4) (not available in conda)
+
+
+ResolvePackageNotFound: 
+- proj4==4.9.3=hfa6e2cd_8
+- vc==14.1=h0510ff6_3
+- vs2015_runtime==15.5.2=3
+
+21.05.2019, this worked:
+1. conda update --all (in base)
+2. conda create -n gempy_n python=3.7 anaconda
+3. conda install -c conda-forge theano
+4. delete C:\Users\elisa\Anaconda3\envs\gempy_n\etc\conda #because there is the vs2015 file
+5. conda install -c conda-forge gdal
