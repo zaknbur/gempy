@@ -42,7 +42,7 @@ try:
     from vtk.util.numpy_support import numpy_to_vtk
     VTK_IMPORT = True
 except ImportError:
-    VTK_IMPORT = False
+    VTK_IMPORT = True
 
 try:
     import steno3d
