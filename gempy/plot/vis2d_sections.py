@@ -55,9 +55,9 @@ class PlotSolution:
             self.plot_data(direction='z')
         else:
             fig, ax = plt.subplots(figsize=(6,6))
-        plt.imshow(np.flipud(geomap.T), extent=self.model.grid.topography.extent, cmap=self._cmap, norm=self._norm)
+        plt.imshow(geomap, origin = 'lower', extent=self.model.grid.topography.extent, cmap=self._cmap, norm=self._norm)
         if contour_lines==True and show_data==False:
-            CS = ax.contour(self.model.grid.topography.values_3D[:, :, 2].T,  cmap='Greys', linestyles='solid',
+            CS = ax.contour(self.model.grid.topography.values_3D[:, :, 2],  cmap='Greys', linestyles='solid',
                             extent=self.model.grid.topography.extent)
             ax.clabel(CS, inline=1, fontsize=10, fmt='%d')
             cbar = plt.colorbar(CS)
