@@ -54,7 +54,7 @@ try:
     import ipyvolume as ipv
     IPV_IMPORT = True
 except ImportError:
-    IPV_IMPORT = False
+    IPV_IMPORT = True
 
 
 class vtkVisualization(object):
