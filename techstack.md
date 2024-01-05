@@ -1,7 +1,8 @@
 <!--
---- Readme.md Snippet without images Start ---
+&lt;--- Readme.md Snippet without images Start ---&gt;
 ## Tech Stack
 zaknbur/gempy is built on the following main stack:
+
 - [Python](https://www.python.org) – Languages
 - [scikit-image](http://scikit-image.org/) – Image Processing and Management
 - [NumPy](http://www.numpy.org/) – Data Science Tools
@@ -13,11 +14,13 @@ zaknbur/gempy is built on the following main stack:
 - [Travis CI](http://travis-ci.com/) – Continuous Integration
 
 Full tech stack [here](/techstack.md)
---- Readme.md Snippet without images End ---
 
---- Readme.md Snippet with images Start ---
+&lt;--- Readme.md Snippet without images End ---&gt;
+
+&lt;--- Readme.md Snippet with images Start ---&gt;
 ## Tech Stack
 zaknbur/gempy is built on the following main stack:
+
 - <img width='25' height='25' src='https://img.stackshare.io/service/993/pUBY5pVj.png' alt='Python'/> [Python](https://www.python.org) – Languages
 - <img width='25' height='25' src='https://img.stackshare.io/service/1294/897180.png' alt='scikit-image'/> [scikit-image](http://scikit-image.org/) – Image Processing and Management
 - <img width='25' height='25' src='https://img.stackshare.io/service/2179/default_332f874a2edb2686f578aa6389313efcea1eec41.png' alt='NumPy'/> [NumPy](http://www.numpy.org/) – Data Science Tools
@@ -29,14 +32,15 @@ zaknbur/gempy is built on the following main stack:
 - <img width='25' height='25' src='https://img.stackshare.io/service/460/Lu6cGu0z_400x400.png' alt='Travis CI'/> [Travis CI](http://travis-ci.com/) – Continuous Integration
 
 Full tech stack [here](/techstack.md)
---- Readme.md Snippet with images End ---
+
+&lt;--- Readme.md Snippet with images End ---&gt;
 -->
 <div align="center">
 
 # Tech Stack File
 ![](https://img.stackshare.io/repo.svg "repo") [zaknbur/gempy](https://github.com/zaknbur/gempy)![](https://img.stackshare.io/public_badge.svg "public")
 <br/><br/>
-|18<br/>Tools used|11/23/23 <br/>Report generated|
+|18<br/>Tools used|01/05/24 <br/>Report generated|
 |------|------|
 </div>
 
@@ -168,12 +172,12 @@ Full tech stack [here](/techstack.md)
 
 |NAME|VERSION|LAST UPDATED|LAST UPDATED BY|LICENSE|VULNERABILITIES|
 |:------|:------|:------|:------|:------|:------|
-|[Theano](https://pypi.org/Theano)|v1.0.4|05/29/19|varga |BSD-3-Clause|N/A|
-|[ipywidgets](https://pypi.org/ipywidgets)|N/A|05/28/19|varga |BSD-3-Clause|N/A|
-|[nbsphinx](https://pypi.org/nbsphinx)|N/A|03/08/18|Miguel de la Varga |MIT|N/A|
-|[networkx](https://pypi.org/networkx)|N/A|04/28/19|Miguel |BSD-3-Clause|N/A|
-|[pandas](https://pypi.org/pandas)|v0.25|08/09/19|varga |BSD-3-Clause|N/A|
-|[seaborn](https://pypi.org/seaborn)|N/A|01/29/18|Miguel de la Varga |BSD-1-Clause|N/A|
+|[Theano](https://pypi.org/project/Theano)|v1.0.4|05/29/19|varga |BSD-3-Clause|N/A|
+|[ipywidgets](https://pypi.org/project/ipywidgets)|N/A|05/28/19|varga |BSD-3-Clause|N/A|
+|[nbsphinx](https://pypi.org/project/nbsphinx)|N/A|03/08/18|Miguel de la Varga |MIT|N/A|
+|[networkx](https://pypi.org/project/networkx)|N/A|04/28/19|Miguel |BSD-3-Clause|N/A|
+|[pandas](https://pypi.org/project/pandas)|v0.25|08/09/19|varga |BSD-3-Clause|N/A|
+|[seaborn](https://pypi.org/project/seaborn)|N/A|01/29/18|Miguel de la Varga |BSD-1-Clause|N/A|
 
 <br/>
 <div align='center'>
